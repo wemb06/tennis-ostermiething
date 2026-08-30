@@ -13,8 +13,7 @@ B-Bewerb — der Sieger eines Spiels rückt automatisch in die nächste Runde.
 - das **Ergebnis melden** — es genügt anzuhaken, wer weiter ist; Sätze sind freiwillig
   (trägt man sie ein, wird der Sieger automatisch erkannt),
 - den **Termin und Platz eintragen** oder ändern,
-- ein Spiel **hervorheben** (★) — hervorgehobene Spiele stehen auf der Startseite ganz oben
-  unter „Im Blickpunkt".
+- ein Spiel **teilen** — Paarung, Termin und Platz als fertige Nachricht für die WhatsApp-Gruppe.
 
 Jede Meldung landet als eigener Commit im Repo, mit dem Namen des Melders in der
 Commit-Nachricht. Ein Fehleintrag ist damit über die GitHub-Historie („Revert")
@@ -41,6 +40,7 @@ Alles steht in einer Datei: [docs/data/vm-2026.json](docs/data/vm-2026.json).
 | Befehl | Zweck |
 |---|---|
 | `node scripts/serve.mjs` | Lokale Vorschau (`http://localhost:4173`, im WLAN auch am Handy) |
+| `npm test` | Unit-Tests der Turnierlogik (Node-Bordmittel, keine Abhängigkeiten) |
 | `node scripts/check-data.mjs` | Turnierdaten und Versionsstempel prüfen — vor jedem Push |
 | `node scripts/version.mjs` | Versionsstempel setzen — nach jeder Änderung an app.js/app.css/bracket.js |
 | `scripts\New-Turnier.ps1 -A a.txt -B b.txt -Force` | Raster aus Spielerlisten neu erzeugen (Zeile = Name, Reihenfolge = Setzung) |

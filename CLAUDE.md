@@ -37,8 +37,6 @@ ein eingetragener Sieger rückt dadurch automatisch weiter. Ergebnis-Format:
 `{"datum":"2026-08-29","saetze":[[6,4],[3,6],[10,7]],"sieger":"heim","notiz":"Match-Tiebreak"}`.
 `"sichtbar": false` blendet einen ganzen Bewerb aus — kein Tab, keine Spiele auf der
 Startseite (fehlt das Feld, ist der Bewerb sichtbar).
-`"top": true` hebt ein Spiel hervor — solche Spiele stehen auf der Startseite ganz oben
-unter „Im Blickpunkt".
 Ein Ergebnis darf **ohne Sätze** gemeldet werden — dann steht nur der Sieger fest
 (`"saetze": []`, `"notiz": "ohne Satzangabe"`). Die Seite zeigt statt Zahlen einen Haken.
 Die Notiz setzt das Formular selbst, damit das bereits veröffentlichte Apps Script
@@ -49,6 +47,8 @@ kampflos aufsteigen.
 
 ## Workflows
 
+- **Tests:** `npm test` (= `node --test scripts/`) — 63 Unit-Tests der Turnierlogik
+  in `scripts/test-bracket.mjs`, ohne Netzwerk und ohne die echten Daten
 - **Daten prüfen (vor jedem Push!):** `node scripts/check-data.mjs` — prüft auch den
   Versionsstempel und schlägt fehl, wenn er fehlt
 - **Nach jeder Änderung an app.js/app.css/bracket.js:** `node scripts/version.mjs`

@@ -64,7 +64,7 @@ export function saetzeText(spiel) {
   const drehen = spiel.ergebnis.sieger === 'gast';
   return saetze
     .map(([a, b]) => (drehen ? `${b}:${a}` : `${a}:${b}`))
-    .join('  ');
+    .join('  ');
 }
 
 /**
@@ -174,7 +174,6 @@ export function bereiteBewerbAuf(bewerb) {
       runde: roh.runde,
       nr: nummern.get(roh.id) ?? 0,
       bewerbId: bewerb.id,
-      top: roh.top === true,
       bewerbName: bewerb.name,
       groesse: bewerb.groesse,
       rundeName: rundenName(bewerb.groesse, roh.runde),
@@ -358,9 +357,6 @@ export function pruefeTurnier(turnier) {
 
       if (spiel.termin && Number.isNaN(new Date(spiel.termin).getTime())) {
         fehler(`${wo}/${spiel.id}: Termin "${spiel.termin}" ist kein gültiges Datum.`);
-      }
-      if (spiel.top !== undefined && typeof spiel.top !== 'boolean') {
-        fehler(`${wo}/${spiel.id}: "top" muss true oder false sein.`);
       }
 
       const ergebnis = spiel.ergebnis;

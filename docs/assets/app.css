@@ -573,20 +573,16 @@ button {
   }
 }
 
-/* ---------------------------------------------------- Blickpunkt & Stern -- */
+/* ------------------------------------------------- Bewerb-Überschriften -- */
 
-.stern {
-  color: var(--akzent);
-  font-size: 0.85rem;
-  line-height: 1;
+.bewerb-titel {
+  margin: 1.5rem 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
-.gruppe.blickpunkt .gruppe-titel {
-  color: var(--akzent);
-}
-
-.gruppe.blickpunkt .partie {
-  border-color: var(--akzent);
+.gruppe + .bewerb-titel {
+  margin-top: 1.8rem;
 }
 
 .partie-fuss.gemeldet {
@@ -777,4 +773,13 @@ button {
 .punkte.haken span {
   width: auto;
   color: var(--gruen);
+}
+
+/* Knöpfe mit Symbol (z. B. Teilen) */
+
+.knopf-breit svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  vertical-align: -0.15em;
+  margin-right: 0.4rem;
 }

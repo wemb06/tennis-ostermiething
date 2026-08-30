@@ -14,7 +14,7 @@ import {
   rundenName,
   seitenName,
   siegerAusSaetzen,
-} from './bracket.js?v=2429006b';
+} from './bracket.js?v=abe122d9';
 
 // Ansichten: 'naechste' = Startseite, sonst die ID eines Bewerbs (Raster)
 const MERKER_SCHLUESSEL = 'vm-gemeldet';
@@ -208,7 +208,6 @@ function partieKarte(spiel, { zeigeZeit = true, zeigeDatum = false, heute = new 
       el(
         'div',
         { class: 'links' },
-        spiel.top ? el('span', { class: 'stern', text: '★', title: 'Hervorgehobenes Spiel' }) : null,
         el('span', { class: 'marke', text: spiel.bewerbId }),
         el('span', { text: spiel.rundeName }),
       ),
@@ -246,27 +245,57 @@ function gefilterteSpiele() {
   return sichtbareBewerbe().flatMap((bewerb) => bewerb.spiele);
 }
 
+/** Vereinsmeister eines entschiedenen Bewerbs — die wichtigste Nachricht zuerst. */
+function meisterBanner() {
+  return sichtbareBewerbe()
+    .filter((bewerb) => bewerb.meister)
+    .map((bewerb) =>
+      el(
+        'p',
+        { class: 'meister' },
+        el('span', { text: '🏆' }),
+        el('span', { text: `${bewerb.name}: ${bewerb.meister.name} ist Vereinsmeister` }),
+      ),
+    );
+}
+
 function ansichtNaechste() {
   const heute = new Date();
   const merker = raeumeMerkerAuf();
   const optionen = { heute, merker };
   const spiele = naechsteSpiele(gefilterteSpiele());
+  const meister = meisterBanner();
   if (spiele.length === 0) {
-    return [el('p', { class: 'leer', text: 'Derzeit ist kein Spiel spielbereit.' })];
+    const alleGespielt = gefilterteSpiele().every((s) => s.status !== 'spielbereit' && s.status !== 'wartet');
+    return [
+      ...meister,
+      el('p', {
+        class: 'leer',
+        text: alleGespielt
+          ? 'Alle Spiele sind gespielt — die Bewerbe sind entschieden.'
+          : 'Derzeit ist kein Spiel spielbereit.',
+      }),
+    ];
   }
 
-  const teile = [];
+  const teile = [...meister];
+  const bewerbe = sichtbareBewerbe();
 
-  // Markierte Spiele zuerst — die Turnierleitung (oder wer mag) hebt sie hervor
-  const markiert = spiele.filter((spiel) => spiel.top);
-  const rest = spiele.filter((spiel) => !spiel.top);
-  if (markiert.length > 0) {
-    teile.push(gruppe('★ Im Blickpunkt', markiert, optionen, 'blickpunkt'));
+  // Erst der ganze A-Bewerb, dann der nächste — innerhalb jedes Bewerbs
+  // chronologisch: überfällig → Tage aufsteigend → Termin noch offen.
+  for (const bewerb of bewerbe) {
+    const eigene = spiele.filter((spiel) => spiel.bewerbId === bewerb.id);
+    if (eigene.length === 0) continue;
+    if (bewerbe.length > 1) teile.push(el('h2', { class: 'bewerb-titel', text: bewerb.name }));
+    teile.push(...tagesGruppen(eigene, heute, optionen));
   }
+  return teile;
+}
 
-  // Gruppierung: überfällig → Tage aufsteigend → ohne Termin
+/** Spiele eines Bewerbs nach Tag gruppieren, in der Reihenfolge der Anzeige. */
+function tagesGruppen(spiele, heute, optionen) {
   const gruppen = new Map();
-  for (const spiel of rest) {
+  for (const spiel of spiele) {
     const termin = alsDatum(spiel.termin);
     let schluessel;
     let titel;
@@ -283,13 +312,9 @@ function ansichtNaechste() {
     if (!gruppen.has(schluessel)) gruppen.set(schluessel, { titel, spiele: [] });
     gruppen.get(schluessel).spiele.push(spiel);
   }
-
-  teile.push(
-    ...[...gruppen.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, eintrag]) => gruppe(eintrag.titel, eintrag.spiele, optionen)),
-  );
-  return teile;
+  return [...gruppen.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, eintrag]) => gruppe(eintrag.titel, eintrag.spiele, optionen));
 }
 
 function rasterBlock(bewerb) {
@@ -351,9 +376,29 @@ async function sendeMeldung(nutzlast) {
     body: JSON.stringify(nutzlast),
   });
   if (!antwort.ok) throw new Error(`Übertragung fehlgeschlagen (HTTP ${antwort.status})`);
-  const ergebnis = await antwort.json().catch(() => ({}));
+  // Google antwortet bei Andrang gelegentlich mit einer HTML-Seite statt JSON —
+  // dann ist unklar, ob die Meldung durchging. Das klärt danach nachgesehen().
+  const ergebnis = await antwort.json().catch(() => ({ unklar: true }));
+  if (ergebnis.unklar) throw new Error('Antwort unklar');
   if (ergebnis.ok !== true) throw new Error(ergebnis.fehler ?? 'Die Meldung wurde nicht angenommen.');
   return ergebnis;
+}
+
+/**
+ * Nach einem Fehler nachsehen, ob die Meldung trotzdem angekommen ist.
+ * Verhindert, dass jemand nach einer unklaren Antwort ein zweites Mal meldet.
+ */
+async function nachgesehen(nutzlast) {
+  try {
+    const frisch = await fetch(`${zustand.turnier.api}?daten=1&x=${Date.now()}`).then((r) => r.json());
+    const spiel = (frisch.bewerbe ?? []).flatMap((b) => b.spiele).find((s) => s.id === nutzlast.spiel);
+    if (!spiel) return false;
+    if (nutzlast.typ === 'ergebnis') return Boolean(spiel.ergebnis);
+    if (nutzlast.typ === 'termin') return spiel.termin === nutzlast.termin;
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function feld(beschriftung, eingabe) {
@@ -399,9 +444,21 @@ async function verarbeiteFormular(formular, nutzlast, typ, spiel) {
     );
     zeichne();
   } catch (fehler) {
+    // Vielleicht ist sie doch angekommen — dann nicht zum Doppelmelden verleiten
+    if (await nachgesehen(nutzlast)) {
+      merkeName(nutzlast.von);
+      merkeMeldung(spiel.id, typ);
+      await holeFrischeDaten();
+      knoten.detailInhalt.replaceChildren(
+        el('h2', { text: 'Danke!' }),
+        el('p', { class: 'formular-hinweis', text: 'Die Meldung ist angekommen.' }),
+      );
+      zeichne();
+      return;
+    }
     senden.disabled = false;
     senden.textContent = typ === 'ergebnis' ? 'Ergebnis melden' : 'Termin speichern';
-    fehlerfeld.textContent = String(fehler.message ?? fehler);
+    fehlerfeld.textContent = `${String(fehler.message ?? fehler)} — bitte nochmal versuchen.`;
   }
 }
 
@@ -423,8 +480,6 @@ function terminFormular(spiel) {
     ['Platz 1', 'Platz 2', 'Platz 3'].map((p) => el('option', { value: p })),
   );
   const platz = el('input', { type: 'text', list: 'platzliste', maxlength: '40', value: spiel.platz ?? '', placeholder: 'z. B. Platz 2' });
-  const top = el('input', { type: 'checkbox' });
-  if (spiel.top) top.checked = true;
   const von = el('input', { type: 'text', required: true, maxlength: '60', value: gemerkterName(), placeholder: 'damit man weiß, von wem die Meldung ist' });
 
   const formular = el(
@@ -441,7 +496,6 @@ function terminFormular(spiel) {
             von: von.value.trim(),
             termin: `${datum.value}T${uhrzeit.value}`,
             platz: platz.value.trim() || null,
-            top: top.checked,
           },
           'termin',
           spiel,
@@ -452,7 +506,6 @@ function terminFormular(spiel) {
     feld('Uhrzeit', uhrzeit),
     feld('Platz (optional)', platz),
     platzliste,
-    el('label', { class: 'feld feld-zeile' }, top, el('span', { text: 'Spiel hervorheben („Im Blickpunkt")' })),
     feld('Dein Name', von),
     el('p', { class: 'formular-fehler' }),
     meldeknopfzeile('Termin speichern'),
@@ -582,66 +635,71 @@ function ergebnisFormular(spiel) {
   );
 }
 
+/* ---------------------------------------------------------------- Teilen -- */
+
+/** Nachrichtentext zu einem Spiel — gedacht für die WhatsApp-Gruppe. */
+export function teilenText(spiel, turnier = zustand.turnier) {
+  const zeilen = [`🎾 ${turnier?.titel ?? 'Vereinsmeisterschaft'} · ${spiel.bewerbName}, ${spiel.rundeName}`];
+  zeilen.push(`${seitenName(spiel.heim)} – ${seitenName(spiel.gast)}`);
+
+  const termin = alsDatum(spiel.termin);
+  const deadline = alsDatum(spiel.deadline);
+  if (spiel.status === 'gespielt') {
+    const satz = saetzeText(spiel);
+    zeilen.push(`Sieger: ${spiel.sieger?.name}${satz ? ` (${satz})` : ''}`);
+  } else if (termin) {
+    zeilen.push(`📅 ${fmtTagLang.format(termin)}, ${fmtUhr.format(termin)} Uhr`);
+  } else if (deadline) {
+    zeilen.push(`📅 Termin offen — bis ${fmtTagLang.format(deadline)}`);
+  } else {
+    zeilen.push('📅 Termin noch offen');
+  }
+  if (spiel.platz && spiel.status !== 'gespielt') zeilen.push(`📍 ${spiel.platz}`);
+
+  return zeilen.join('\n');
+}
+
+function seitenAdresse() {
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
 /**
- * Spiel hervorheben oder Hervorhebung wegnehmen. Wer schon einmal gemeldet hat,
- * dessen Name steckt im Merker — dann genügt ein Tipp.
+ * Teilt das Spiel. Am Handy öffnet sich das übliche Teilen-Fenster (dort ist
+ * WhatsApp dabei), sonst geht es direkt zu WhatsApp; klappt beides nicht,
+ * landet der Text in der Zwischenablage.
  */
-function markierungAendern(spiel, wert) {
-  const name = gemerkterName();
-  if (!name) {
-    namensAbfrage(spiel, wert);
-    return;
-  }
-  sendeMarkierung(spiel, wert, name);
-}
+async function teileSpiel(spiel, knopf) {
+  const text = teilenText(spiel);
+  const adresse = seitenAdresse();
+  const melde = (was) => {
+    if (!knopf) return;
+    const alt = knopf.textContent;
+    knopf.textContent = was;
+    setTimeout(() => { knopf.textContent = alt; }, 2500);
+  };
 
-async function sendeMarkierung(spiel, wert, name) {
-  const knopf = knoten.detailInhalt.querySelector('.markierung');
-  if (knopf) {
-    knopf.disabled = true;
-    knopf.textContent = 'Wird übertragen …';
-  }
-  try {
-    await sendeMeldung({ typ: 'markierung', spiel: spiel.id, von: name, top: wert });
-    merkeName(name);
-    const roh = await ladeTurnier().catch(() => null);
-    if (roh) uebernimm(roh);
-    const frisch = alleSpiele(zustand.turnier).find((s) => s.id === spiel.id) ?? { ...spiel, top: wert };
-    frisch.top = wert; // bis der Pages-Build durch ist, zeigen wir den gemeldeten Stand
-    zeigeDetail(frisch);
-    zeichne();
-  } catch (fehler) {
-    if (knopf) {
-      knopf.disabled = false;
-      knopf.textContent = wert ? '★ Hervorheben' : '★ Hervorhebung entfernen';
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Vereinsmeisterschaft', text, url: adresse });
+      return;
+    } catch (fehler) {
+      if (fehler?.name === 'AbortError') return; // abgebrochen ist kein Fehler
     }
-    const meldung = knoten.detailInhalt.querySelector('.formular-fehler');
-    if (meldung) meldung.textContent = String(fehler.message ?? fehler);
   }
-}
 
-/** Einmalige Namensabfrage, bevor das erste Mal markiert wird. */
-function namensAbfrage(spiel, wert) {
-  const von = el('input', { type: 'text', required: true, maxlength: '60', placeholder: 'Dein Name' });
-  const formular = el(
-    'form',
-    {
-      class: 'formular',
-      onsubmit: (ereignis) => {
-        ereignis.preventDefault();
-        sendeMarkierung(spiel, wert, von.value.trim());
-      },
-    },
-    feld('Dein Name', von),
-    el('p', { class: 'formular-fehler' }),
-    meldeknopfzeile(wert ? 'Hervorheben' : 'Hervorhebung entfernen'),
+  const fenster = window.open(
+    `https://wa.me/?text=${encodeURIComponent(`${text}\n\n${adresse}`)}`,
+    '_blank',
+    'noopener',
   );
-  knoten.detailInhalt.replaceChildren(
-    el('h2', { text: wert ? 'Spiel hervorheben' : 'Hervorhebung entfernen' }),
-    el('p', { class: 'formular-hinweis', text: 'Damit nachvollziehbar bleibt, wer die Markierung gesetzt hat.' }),
-    formular,
-  );
-  von.focus();
+  if (fenster) return;
+
+  try {
+    await navigator.clipboard.writeText(`${text}\n\n${adresse}`);
+    melde('In die Zwischenablage kopiert');
+  } catch {
+    melde('Teilen hat nicht geklappt');
+  }
 }
 
 /* ---------------------------------------------------------------- Detail -- */
@@ -681,21 +739,19 @@ function zeigeDetail(spiel) {
     } else if (spiel.status === 'gespielt') {
       aktionen.push(el('p', { class: 'formular-hinweis', text: 'Falsch eingetragen? Bitte kurz der Turnierleitung schreiben.' }));
     }
-    // Hervorheben geht auch ohne Termin — und auch für Spiele, die noch auf
-    // die Vorrunde warten (z. B. um das Finale vorab anzukündigen).
-    if (spiel.status !== 'gespielt' && spiel.status !== 'freilos') {
-      aktionen.push(
-        el('button', {
-          class: 'knopf-breit zweitrangig markierung',
-          type: 'button',
-          text: spiel.top ? '★ Hervorhebung entfernen' : '★ Hervorheben',
-          onclick: () => markierungAendern(spiel, !spiel.top),
-        }),
-      );
-      aktionen.push(el('p', { class: 'formular-fehler' }));
-    }
   } else if (spiel.status === 'spielbereit') {
     aktionen.push(el('p', { class: 'formular-hinweis', text: 'Online-Eintragen wird gerade eingerichtet — Ergebnis bitte an die Turnierleitung melden.' }));
+  }
+
+  // Teilen: Paarung, Termin und Platz als Nachricht — für die WhatsApp-Gruppe
+  if (spiel.heim.bekannt && spiel.gast.bekannt && !spiel.heim.freilos && !spiel.gast.freilos) {
+    const teilen = el(
+      'button',
+      { class: 'knopf-breit zweitrangig', type: 'button', onclick: () => teileSpiel(spiel, teilen) },
+      symbol(SYMBOLE.teilen),
+      el('span', { text: 'Spiel teilen' }),
+    );
+    aktionen.push(teilen);
   }
 
   knoten.detailInhalt.replaceChildren(
@@ -739,6 +795,7 @@ function zeichne() {
 const SYMBOLE = {
   kalender: 'M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z',
   raster: 'M3 5h6v4H3zM3 15h6v4H3zM13 10h6v4h-6zM9 7h2v5h2M9 17h2v-5',
+  teilen: 'M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 .17 1L8.7 8.51a3 3 0 1 0 0 6.98l6.47 3.51A3 3 0 1 0 18 16a3 3 0 0 0-2.3 1.07L9.3 13.5a3 3 0 0 0 0-3l6.4-3.57A3 3 0 0 0 18 8Z',
 };
 
 function symbol(pfad) {
