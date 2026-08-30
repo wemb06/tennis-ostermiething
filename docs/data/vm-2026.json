@@ -1,9 +1,9 @@
 {
   "verein": "UTC Ostermiething",
   "titel": "Vereinsmeisterschaft 2026",
-  "stand": "2026-08-30T20:06:41+02:00",
+  "stand": "2026-08-30T21:00:00+02:00",
   "hinweis": "Demo-Daten zum Ausprobieren. Ergebnisse bitte an die Turnierleitung melden.",
-  "api": null,
+  "api": "https://script.google.com/macros/s/AKfycbxGjaCgXVS_FjbE4RnsOtcVqRVv5wiCY1bybg7ukEFXH5K78_E_h8AnH0LmTrbrfxrt/exec",
   "demo": true,
   "bewerbe": [
     {
@@ -391,25 +391,7 @@
           },
           "termin": "2026-08-30T18:00",
           "platz": "Platz 1",
-          "ergebnis": {
-            "datum": "2026-08-30",
-            "saetze": [
-              [
-                6,
-                4
-              ],
-              [
-                3,
-                6
-              ],
-              [
-                10,
-                7
-              ]
-            ],
-            "sieger": "heim",
-            "notiz": "Match-Tiebreak"
-          },
+          "ergebnis": null,
           "top": true
         },
         {
@@ -423,8 +405,8 @@
             "quelle": "sieger",
             "spiel": "A-R1-8"
           },
-          "termin": "2026-09-06T16:00",
-          "platz": "Platz 3",
+          "termin": null,
+          "platz": null,
           "ergebnis": null,
           "top": false
         },
@@ -611,7 +593,7 @@
             "quelle": "spieler",
             "pos": 6
           },
-          "termin": "2026-09-02T19:00",
+          "termin": "2026-08-27T18:00",
           "platz": "Platz 2",
           "ergebnis": null
         },
@@ -670,8 +652,8 @@
             "quelle": "spieler",
             "pos": 12
           },
-          "termin": "2026-09-02T17:00",
-          "platz": "Platz 1",
+          "termin": null,
+          "platz": null,
           "ergebnis": null
         },
         {
@@ -688,7 +670,7 @@
           "termin": "2026-09-01T19:00",
           "platz": "Platz 1",
           "ergebnis": null,
-          "top": true
+          "top": false
         },
         {
           "id": "B-R1-8",
