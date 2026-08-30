@@ -37,6 +37,10 @@ ein eingetragener Sieger rückt dadurch automatisch weiter. Ergebnis-Format:
 `{"datum":"2026-08-29","saetze":[[6,4],[3,6],[10,7]],"sieger":"heim","notiz":"Match-Tiebreak"}`.
 `"top": true` hebt ein Spiel hervor — solche Spiele stehen auf der Startseite ganz oben
 unter „Im Blickpunkt".
+Ein Ergebnis darf **ohne Sätze** gemeldet werden — dann steht nur der Sieger fest
+(`"saetze": []`, `"notiz": "ohne Satzangabe"`). Die Seite zeigt statt Zahlen einen Haken.
+Die Notiz setzt das Formular selbst, damit das bereits veröffentlichte Apps Script
+unverändert bleiben kann (es verlangt Sätze **oder** eine Notiz).
 Termine sind gemischt: fixer `termin` **oder** `null` = „Termin offen" mit Runden-Deadline
 aus `deadlines`. Spieler namens `Freilos` (oder unbesetzte Positionen) lassen den Gegner
 kampflos aufsteigen.

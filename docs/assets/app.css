@@ -755,3 +755,53 @@ button {
   color: var(--text-leise);
   font-size: 0.82rem;
 }
+
+/* Sieger-Auswahl: die Hauptangabe, darum grosse Tippflaechen */
+
+.feld-titel {
+  margin-top: 0.3rem;
+  color: var(--text-leise);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sieger-wahl {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.sieger-zeile {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--linie);
+  border-radius: 12px;
+  background: var(--grund);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.sieger-zeile input {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: none;
+  accent-color: var(--akzent);
+}
+
+.sieger-zeile:has(input:checked) {
+  border-color: var(--akzent);
+  background: var(--akzent-weich);
+  font-weight: 700;
+}
+
+.satz-hinweis {
+  margin-top: 0;
+}
+
+.punkte.haken span {
+  width: auto;
+  color: var(--gruen);
+}

@@ -359,7 +359,6 @@ export function pruefeTurnier(turnier) {
       }
       const saetze = ergebnis.saetze;
       if (!Array.isArray(saetze) || saetze.length === 0) {
-        if (!ergebnis.notiz) warnung(`${wo}/${spiel.id}: Ergebnis ohne Sätze und ohne Notiz (z. B. "w.o.").`);
         continue;
       }
       for (const satz of saetze) {

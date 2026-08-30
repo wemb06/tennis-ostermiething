@@ -156,13 +156,17 @@ function seitenZeile(spiel, welche) {
   if (istSieger && spiel.status === 'gespielt') klassen.push('sieger');
 
   const saetze = spiel.ergebnis?.saetze ?? [];
-  const punkte = saetze.length
-    ? el(
-        'div',
-        { class: 'punkte' },
-        saetze.map((satz) => el('span', { text: String(welche === 'heim' ? satz[0] : satz[1]) })),
-      )
-    : null;
+  let punkte = null;
+  if (saetze.length) {
+    punkte = el(
+      'div',
+      { class: 'punkte' },
+      saetze.map((satz) => el('span', { text: String(welche === 'heim' ? satz[0] : satz[1]) })),
+    );
+  } else if (istSieger && spiel.status === 'gespielt') {
+    // Sieger gemeldet, Satzergebnis unbekannt — Haken statt Zahlen
+    punkte = el('div', { class: 'punkte haken' }, el('span', { text: '✓' }));
+  }
 
   return el('div', { class: klassen.join(' ') }, el('div', { class: 'name', text: seitenName(seite) }), punkte);
 }
@@ -189,7 +193,9 @@ function partieKarte(spiel, { zeigeZeit = true, zeigeDatum = false, heute = new 
     : wannText(spiel, heute);
 
   const platz = spiel.platz && zeigeZeit ? el('div', { class: 'partie-fuss', text: spiel.platz }) : null;
-  const notiz = spiel.ergebnis?.notiz ? el('div', { class: 'partie-fuss', text: spiel.ergebnis.notiz }) : null;
+  // "ohne Satzangabe" sagt schon der Haken beim Sieger — nicht doppelt schreiben
+  const notizText = spiel.ergebnis?.notiz === 'ohne Satzangabe' ? '' : spiel.ergebnis?.notiz;
+  const notiz = notizText ? el('div', { class: 'partie-fuss', text: notizText }) : null;
   const gemeldet = merker[spiel.id]
     ? el('div', { class: 'partie-fuss gemeldet', text: '✓ Meldung übermittelt — erscheint in Kürze' })
     : null;
@@ -398,6 +404,9 @@ async function verarbeiteFormular(formular, nutzlast, typ, spiel) {
     await sendeMeldung(nutzlast);
     merkeName(nutzlast.von);
     merkeMeldung(spiel.id, typ);
+    // Sofort den frischen Stand holen, damit die Meldung nicht erst nach dem
+    // Seiten-Build (~1 min) sichtbar wird.
+    await holeFrischeDaten();
     knoten.detailInhalt.replaceChildren(
       el('h2', { text: 'Danke!' }),
       el('p', {
@@ -492,7 +501,7 @@ function ergebnisFormular(spiel) {
   const von = el('input', { type: 'text', required: true, maxlength: '60', value: gemerkterName(), placeholder: 'damit man weiß, von wem die Meldung ist' });
   const siegerHeim = el('input', { type: 'radio', name: 'sieger', value: 'heim', required: true });
   const siegerGast = el('input', { type: 'radio', name: 'sieger', value: 'gast', required: true });
-  const vorschau = el('p', { class: 'formular-hinweis', text: 'Sätze eintragen — der Sieger wird automatisch erkannt.' });
+  const vorschau = el('p', { class: 'formular-hinweis satz-hinweis', text: 'Sätze sind freiwillig — trägst du sie ein, wird der Sieger automatisch erkannt.' });
 
   function gelesenesSaetze() {
     const saetze = [];
@@ -511,12 +520,17 @@ function ergebnisFormular(spiel) {
       (berechnet === 'heim' ? siegerHeim : siegerGast).checked = true;
       vorschau.textContent = `Sieger laut Sätzen: ${seitenName(berechnet === 'heim' ? spiel.heim : spiel.gast)}`;
     } else {
-      vorschau.textContent = 'Sätze eintragen — der Sieger wird automatisch erkannt. Bei w.o./Aufgabe den Sieger bitte selbst anhaken.';
+      vorschau.textContent = 'Sätze sind freiwillig — trägst du sie ein, wird der Sieger automatisch erkannt.';
     }
   }
   for (const { heim, gast } of saetzeEingaben) {
     heim.addEventListener('input', aktualisiereSieger);
     gast.addEventListener('input', aktualisiereSieger);
+  }
+
+  /** Große, gut treffbare Zeile je Spieler — das ist die Hauptangabe. */
+  function siegerZeile(knopf, seite) {
+    return el('label', { class: 'sieger-zeile' }, knopf, el('span', { text: seitenName(seite) }));
   }
 
   const formular = el(
@@ -532,15 +546,13 @@ function ergebnisFormular(spiel) {
           return;
         }
         const sieger = siegerHeim.checked ? 'heim' : 'gast';
-        if (saetze.length === 0 && !notiz.value.trim()) {
-          fehlerfeld.textContent = 'Ohne Sätze bitte eine Anmerkung angeben (z. B. w.o.).';
-          return;
-        }
         const berechnet = siegerAusSaetzen(saetze);
         if (berechnet && berechnet !== sieger && !notiz.value.trim()) {
           fehlerfeld.textContent = 'Der angehakte Sieger passt nicht zu den Sätzen.';
           return;
         }
+        // Ohne Sätze halten wir fest, dass nur der Sieger bekannt ist
+        const anmerkung = notiz.value.trim() || (saetze.length === 0 ? 'ohne Satzangabe' : '');
         verarbeiteFormular(
           formular,
           {
@@ -551,7 +563,7 @@ function ergebnisFormular(spiel) {
               datum: datum.value,
               saetze,
               sieger,
-              ...(notiz.value.trim() ? { notiz: notiz.value.trim() } : {}),
+              ...(anmerkung ? { notiz: anmerkung } : {}),
             },
           },
           'ergebnis',
@@ -559,6 +571,9 @@ function ergebnisFormular(spiel) {
         );
       },
     },
+    el('p', { class: 'feld-titel', text: 'Wer ist weiter?' }),
+    el('div', { class: 'sieger-wahl' }, siegerZeile(siegerHeim, spiel.heim), siegerZeile(siegerGast, spiel.gast)),
+    el('p', { class: 'feld-titel', text: 'Satzergebnis (optional)' }),
     el(
       'div',
       { class: 'saetze-gitter' },
@@ -572,13 +587,6 @@ function ergebnisFormular(spiel) {
       saetzeEingaben.map(({ gast }) => gast),
     ),
     vorschau,
-    el(
-      'div',
-      { class: 'feld feld-zeile sieger-wahl' },
-      el('span', { text: 'Sieger:' }),
-      el('label', {}, siegerHeim, el('span', { text: seitenName(spiel.heim) })),
-      el('label', {}, siegerGast, el('span', { text: seitenName(spiel.gast) })),
-    ),
     feld('Gespielt am', datum),
     feld('Anmerkung', notiz),
     notizliste,

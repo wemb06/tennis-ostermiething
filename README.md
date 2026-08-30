@@ -10,7 +10,8 @@ B-Bewerb — der Sieger eines Spiels rückt automatisch in die nächste Runde.
 
 **Jedes Vereinsmitglied** kann über den Link — ohne Login — bei einem spielbereiten Spiel
 
-- das **Ergebnis melden** (Sätze eintragen, der Sieger wird automatisch erkannt),
+- das **Ergebnis melden** — es genügt anzuhaken, wer weiter ist; Sätze sind freiwillig
+  (trägt man sie ein, wird der Sieger automatisch erkannt),
 - den **Termin und Platz eintragen** oder ändern,
 - ein Spiel **hervorheben** (★) — hervorgehobene Spiele stehen auf der Startseite ganz oben
   unter „Im Blickpunkt".
