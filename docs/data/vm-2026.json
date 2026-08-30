@@ -1,0 +1,792 @@
+{
+  "verein": "UTC Ostermiething",
+  "titel": "Vereinsmeisterschaft 2026",
+  "stand": "2026-08-30T19:30:00+02:00",
+  "hinweis": "Demo-Daten zum Ausprobieren. Ergebnisse bitte an die Turnierleitung melden.",
+  "demo": true,
+  "bewerbe": [
+    {
+      "id": "A",
+      "name": "A-Bewerb",
+      "groesse": 16,
+      "deadlines": {
+        "1": "2026-09-01",
+        "2": "2026-09-08",
+        "3": "2026-09-15",
+        "4": "2026-09-22"
+      },
+      "spieler": [
+        {
+          "pos": 1,
+          "name": "Thomas Bauer",
+          "setzung": 1
+        },
+        {
+          "pos": 2,
+          "name": "Alexander Pichler"
+        },
+        {
+          "pos": 3,
+          "name": "Florian Hofer"
+        },
+        {
+          "pos": 4,
+          "name": "Daniel Wimmer"
+        },
+        {
+          "pos": 5,
+          "name": "Christoph Berger"
+        },
+        {
+          "pos": 6,
+          "name": "Martin Schwarz"
+        },
+        {
+          "pos": 7,
+          "name": "Johannes Fuchs"
+        },
+        {
+          "pos": 8,
+          "name": "Andreas Mayr",
+          "setzung": 4
+        },
+        {
+          "pos": 9,
+          "name": "Stefan Huber",
+          "setzung": 3
+        },
+        {
+          "pos": 10,
+          "name": "David Moser"
+        },
+        {
+          "pos": 11,
+          "name": "Bernhard Reiter"
+        },
+        {
+          "pos": 12,
+          "name": "Markus Steiner"
+        },
+        {
+          "pos": 13,
+          "name": "Patrick Leitner"
+        },
+        {
+          "pos": 14,
+          "name": "Lukas Aigner"
+        },
+        {
+          "pos": 15,
+          "name": "Simon Ebner"
+        },
+        {
+          "pos": 16,
+          "name": "Michael Gruber",
+          "setzung": 2
+        }
+      ],
+      "spiele": [
+        {
+          "id": "A-R1-1",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 1
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 2
+          },
+          "termin": null,
+          "platz": "Platz 1",
+          "ergebnis": {
+            "datum": "2026-08-22",
+            "saetze": [
+              [
+                6,
+                1
+              ],
+              [
+                6,
+                2
+              ]
+            ],
+            "sieger": "heim"
+          }
+        },
+        {
+          "id": "A-R1-2",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 3
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 4
+          },
+          "termin": null,
+          "platz": "Platz 2",
+          "ergebnis": {
+            "datum": "2026-08-23",
+            "saetze": [
+              [
+                4,
+                6
+              ],
+              [
+                6,
+                3
+              ],
+              [
+                8,
+                10
+              ]
+            ],
+            "sieger": "gast",
+            "notiz": "Match-Tiebreak"
+          }
+        },
+        {
+          "id": "A-R1-3",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 5
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 6
+          },
+          "termin": null,
+          "platz": "Platz 2",
+          "ergebnis": {
+            "datum": "2026-08-22",
+            "saetze": [
+              [
+                6,
+                4
+              ],
+              [
+                7,
+                5
+              ]
+            ],
+            "sieger": "heim"
+          }
+        },
+        {
+          "id": "A-R1-4",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 7
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 8
+          },
+          "termin": null,
+          "platz": "Platz 1",
+          "ergebnis": {
+            "datum": "2026-08-24",
+            "saetze": [
+              [
+                3,
+                6
+              ],
+              [
+                2,
+                6
+              ]
+            ],
+            "sieger": "gast"
+          }
+        },
+        {
+          "id": "A-R1-5",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 9
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 10
+          },
+          "termin": null,
+          "platz": "Platz 3",
+          "ergebnis": {
+            "datum": "2026-08-24",
+            "saetze": [
+              [
+                6,
+                2
+              ],
+              [
+                6,
+                4
+              ]
+            ],
+            "sieger": "heim"
+          }
+        },
+        {
+          "id": "A-R1-6",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 11
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 12
+          },
+          "termin": null,
+          "platz": "Platz 1",
+          "ergebnis": {
+            "datum": "2026-08-25",
+            "saetze": [
+              [
+                4,
+                6
+              ],
+              [
+                6,
+                3
+              ],
+              [
+                8,
+                10
+              ]
+            ],
+            "sieger": "gast",
+            "notiz": "Match-Tiebreak"
+          }
+        },
+        {
+          "id": "A-R1-7",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 13
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 14
+          },
+          "termin": null,
+          "platz": "Platz 2",
+          "ergebnis": {
+            "datum": "2026-08-26",
+            "saetze": [
+              [
+                7,
+                6
+              ],
+              [
+                6,
+                4
+              ]
+            ],
+            "sieger": "heim"
+          }
+        },
+        {
+          "id": "A-R1-8",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 15
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 16
+          },
+          "termin": null,
+          "platz": "Platz 3",
+          "ergebnis": {
+            "datum": "2026-08-25",
+            "saetze": [
+              [
+                2,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "sieger": "gast"
+          }
+        },
+        {
+          "id": "A-R2-1",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R1-1"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R1-2"
+          },
+          "termin": null,
+          "platz": "Platz 1",
+          "ergebnis": {
+            "datum": "2026-08-29",
+            "saetze": [
+              [
+                6,
+                3
+              ],
+              [
+                6,
+                4
+              ]
+            ],
+            "sieger": "heim"
+          }
+        },
+        {
+          "id": "A-R2-2",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R1-3"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R1-4"
+          },
+          "termin": null,
+          "platz": "Platz 2",
+          "ergebnis": {
+            "datum": "2026-08-29",
+            "saetze": [
+              [
+                4,
+                6
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            "sieger": "gast",
+            "notiz": "Tiebreak 7:5"
+          }
+        },
+        {
+          "id": "A-R2-3",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R1-5"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R1-6"
+          },
+          "termin": "2026-08-30T18:00",
+          "platz": "Platz 1",
+          "ergebnis": null
+        },
+        {
+          "id": "A-R2-4",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R1-7"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R1-8"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "A-R3-1",
+          "runde": 3,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R2-1"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R2-2"
+          },
+          "termin": "2026-09-05T10:00",
+          "platz": "Platz 2",
+          "ergebnis": null
+        },
+        {
+          "id": "A-R3-2",
+          "runde": 3,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R2-3"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R2-4"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "A-R4-1",
+          "runde": 4,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "A-R3-1"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "A-R3-2"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "B-Bewerb",
+      "groesse": 16,
+      "deadlines": {
+        "1": "2026-09-01",
+        "2": "2026-09-08",
+        "3": "2026-09-15",
+        "4": "2026-09-22"
+      },
+      "spieler": [
+        {
+          "pos": 1,
+          "name": "Sabine Winkler",
+          "setzung": 1
+        },
+        {
+          "pos": 2,
+          "name": "Freilos"
+        },
+        {
+          "pos": 3,
+          "name": "Franz Lindner"
+        },
+        {
+          "pos": 4,
+          "name": "Manuel Egger"
+        },
+        {
+          "pos": 5,
+          "name": "Georg Neubauer"
+        },
+        {
+          "pos": 6,
+          "name": "Claudia Pfeifer"
+        },
+        {
+          "pos": 7,
+          "name": "Tobias Auer"
+        },
+        {
+          "pos": 8,
+          "name": "Peter Wagner",
+          "setzung": 4
+        },
+        {
+          "pos": 9,
+          "name": "Katrin Baumgartner",
+          "setzung": 3
+        },
+        {
+          "pos": 10,
+          "name": "Nina Hofstätter"
+        },
+        {
+          "pos": 11,
+          "name": "Josef Brandstetter"
+        },
+        {
+          "pos": 12,
+          "name": "Anna Riedl"
+        },
+        {
+          "pos": 13,
+          "name": "Elisabeth Haas"
+        },
+        {
+          "pos": 14,
+          "name": "Verena Stadler"
+        },
+        {
+          "pos": 15,
+          "name": "Freilos"
+        },
+        {
+          "pos": 16,
+          "name": "Julia Lechner",
+          "setzung": 2
+        }
+      ],
+      "spiele": [
+        {
+          "id": "B-R1-1",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 1
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 2
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R1-2",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 3
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 4
+          },
+          "termin": null,
+          "platz": "Platz 3",
+          "ergebnis": {
+            "datum": "2026-08-27",
+            "saetze": [
+              [
+                6,
+                7
+              ],
+              [
+                3,
+                6
+              ]
+            ],
+            "sieger": "gast"
+          }
+        },
+        {
+          "id": "B-R1-3",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 5
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 6
+          },
+          "termin": "2026-08-27T18:00",
+          "platz": "Platz 2",
+          "ergebnis": null
+        },
+        {
+          "id": "B-R1-4",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 7
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 8
+          },
+          "termin": "2026-08-31T17:30",
+          "platz": "Platz 3",
+          "ergebnis": null
+        },
+        {
+          "id": "B-R1-5",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 9
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 10
+          },
+          "termin": null,
+          "platz": "Platz 1",
+          "ergebnis": {
+            "datum": "2026-08-28",
+            "saetze": [
+              [
+                6,
+                2
+              ],
+              [
+                6,
+                1
+              ]
+            ],
+            "sieger": "heim"
+          }
+        },
+        {
+          "id": "B-R1-6",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 11
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 12
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R1-7",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 13
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 14
+          },
+          "termin": "2026-09-01T19:00",
+          "platz": "Platz 1",
+          "ergebnis": null
+        },
+        {
+          "id": "B-R1-8",
+          "runde": 1,
+          "heim": {
+            "quelle": "spieler",
+            "pos": 15
+          },
+          "gast": {
+            "quelle": "spieler",
+            "pos": 16
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R2-1",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R1-1"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R1-2"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R2-2",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R1-3"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R1-4"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R2-3",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R1-5"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R1-6"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R2-4",
+          "runde": 2,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R1-7"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R1-8"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R3-1",
+          "runde": 3,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R2-1"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R2-2"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R3-2",
+          "runde": 3,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R2-3"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R2-4"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        },
+        {
+          "id": "B-R4-1",
+          "runde": 4,
+          "heim": {
+            "quelle": "sieger",
+            "spiel": "B-R3-1"
+          },
+          "gast": {
+            "quelle": "sieger",
+            "spiel": "B-R3-2"
+          },
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
+        }
+      ]
+    }
+  ]
+}

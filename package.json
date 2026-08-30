@@ -1,0 +1,11 @@
+{
+  "name": "tennis-ostermiething",
+  "private": true,
+  "type": "module",
+  "description": "Dashboard zur Vereinsmeisterschaft des UTC Ostermiething (statische Seite, kein Build)",
+  "scripts": {
+    "vorschau": "node scripts/serve.mjs",
+    "pruefen": "node scripts/check-data.mjs",
+    "bilder": "node scripts/bilder.mjs"
+  }
+}

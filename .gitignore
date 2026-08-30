@@ -1,0 +1,10 @@
+# Lokale Claude-Einstellungen
+.claude/settings.local.json
+
+# Lose lokale Ablage (Spielerlisten-Entwürfe, Experimente) — reist nicht mit
+_archiv/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

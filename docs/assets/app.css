@@ -1,0 +1,601 @@
+/* Vereinsmeisterschaft UTC Ostermiething — Dashboard.
+   Mobile zuerst; hell/dunkel richtet sich nach der Einstellung des Handys.
+   Keine externen Schriften oder Bibliotheken, damit die Seite auch am Platz
+   mit schlechtem Empfang sofort da ist. */
+
+:root {
+  --grund: #f6f3ee;
+  --flaeche: #ffffff;
+  --flaeche-2: #ebe6dd;
+  --linie: #ddd5c8;
+  --text: #201e1b;
+  --text-leise: #6d6659;
+  --akzent: #b8502a; /* Sandplatz */
+  --akzent-weich: #f6e3d9;
+  --gruen: #2c6b4f;
+  --gruen-weich: #dcece3;
+  --schatten: 0 1px 2px rgba(32, 30, 27, 0.06), 0 4px 12px rgba(32, 30, 27, 0.05);
+  --kopf-hoehe: 2.1rem;
+  --spalte: 186px;
+  --verbinder: 20px;
+  --raster-hoehe: 620px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --grund: #171614;
+    --flaeche: #211f1c;
+    --flaeche-2: #2c2925;
+    --linie: #3b3730;
+    --text: #f0ece5;
+    --text-leise: #a49c8e;
+    --akzent: #e2814f;
+    --akzent-weich: #3a2519;
+    --gruen: #6fc79b;
+    --gruen-weich: #1e3529;
+    --schatten: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding-bottom: calc(4.6rem + env(safe-area-inset-bottom));
+  background: var(--grund);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- Kopf --- */
+
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: calc(0.7rem + env(safe-area-inset-top)) 1rem 0.6rem;
+  background: var(--grund);
+  border-bottom: 1px solid var(--linie);
+}
+
+.kopf-oben {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.verein {
+  color: var(--akzent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.titel {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.stand {
+  margin-top: 0.15rem;
+  color: var(--text-leise);
+  font-size: 0.78rem;
+}
+
+.knopf-rund {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border: 1px solid var(--linie);
+  border-radius: 50%;
+  background: var(--flaeche);
+  box-shadow: var(--schatten);
+}
+
+.knopf-rund svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.knopf-rund:active {
+  background: var(--flaeche-2);
+}
+
+.knopf-rund.laeuft svg {
+  animation: dreht 0.8s linear infinite;
+}
+
+@keyframes dreht {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Segment-Umschalter (Alle / A / B) */
+.segment {
+  display: flex;
+  gap: 0.2rem;
+  margin-top: 0.7rem;
+  padding: 0.2rem;
+  background: var(--flaeche-2);
+  border-radius: 999px;
+}
+
+.segment button {
+  flex: 1;
+  padding: 0.4rem 0.3rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-leise);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.segment button[aria-pressed="true"] {
+  background: var(--flaeche);
+  color: var(--akzent);
+  box-shadow: var(--schatten);
+}
+
+/* ------------------------------------------------------------- Inhalte --- */
+
+.inhalt {
+  padding: 0.9rem 1rem 1.5rem;
+}
+
+.hinweis-laden,
+.leer {
+  padding: 2rem 0.5rem;
+  color: var(--text-leise);
+  text-align: center;
+}
+
+.fehler {
+  padding: 1rem;
+  border: 1px solid var(--akzent);
+  border-radius: 12px;
+  background: var(--akzent-weich);
+}
+
+.demo-band {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px dashed var(--akzent);
+  border-radius: 12px;
+  background: var(--akzent-weich);
+  color: var(--akzent);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.gruppe + .gruppe {
+  margin-top: 1.4rem;
+}
+
+.gruppe-titel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-leise);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.gruppe-titel .anzahl {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.karten {
+  display: grid;
+  gap: 0.55rem;
+}
+
+/* ------------------------------------------------------------- Partien --- */
+
+.partie {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--linie);
+  border-radius: 14px;
+  background: var(--flaeche);
+  box-shadow: var(--schatten);
+  text-align: left;
+}
+
+.partie:active {
+  border-color: var(--akzent);
+}
+
+.partie-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-leise);
+  font-size: 0.75rem;
+}
+
+.partie-kopf .links {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.marke {
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  background: var(--akzent-weich);
+  color: var(--akzent);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.wann {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.wann.offen {
+  color: var(--akzent);
+  font-weight: 600;
+}
+
+.wann.ausstaendig {
+  color: var(--akzent);
+  font-weight: 600;
+}
+
+.seiten {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.seite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.seite .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.seite.offen .name {
+  color: var(--text-leise);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.seite.freilos .name {
+  color: var(--text-leise);
+}
+
+.seite.sieger .name {
+  font-weight: 700;
+}
+
+.punkte {
+  display: flex;
+  flex: none;
+  gap: 0.35rem;
+  color: var(--text-leise);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.punkte span {
+  width: 1.05em;
+  text-align: center;
+}
+
+.seite.sieger .punkte {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.partie-fuss {
+  margin-top: 0.35rem;
+  color: var(--text-leise);
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------- Raster -- */
+
+.raster-block + .raster-block {
+  margin-top: 1.6rem;
+}
+
+.raster-titel {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.meister {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--gruen);
+  border-radius: 12px;
+  background: var(--gruen-weich);
+  font-weight: 700;
+}
+
+.raster-huelle {
+  overflow-x: auto;
+  margin: 0 -1rem;
+  padding: 0 1rem 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.raster {
+  display: flex;
+  align-items: stretch;
+  height: var(--raster-hoehe);
+  min-width: max-content;
+}
+
+.runde {
+  display: flex;
+  flex-direction: column;
+  width: var(--spalte);
+  flex: none;
+}
+
+.rundenkopf {
+  display: flex;
+  align-items: center;
+  height: var(--kopf-hoehe);
+  color: var(--text-leise);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.paarungen {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.slot {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-height: 0;
+}
+
+.raster .partie {
+  position: relative;
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+}
+
+.raster .partie .seite .name {
+  font-size: 0.85rem;
+}
+
+/* Leitung vom Spiel zur Klammer der nächsten Runde */
+.runde:not(:last-of-type) .partie::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 1px);
+  right: -8px;
+  width: 8px;
+  height: 2px;
+  background: var(--linie);
+}
+
+.verbinder {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: var(--verbinder);
+  margin: 0 8px;
+  padding-top: var(--kopf-hoehe);
+}
+
+.klammer {
+  position: relative;
+  width: 100%;
+  height: 50%;
+  border-top: 2px solid var(--linie);
+  border-right: 2px solid var(--linie);
+  border-bottom: 2px solid var(--linie);
+  border-radius: 0 6px 6px 0;
+}
+
+.klammer::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 1px);
+  right: -8px;
+  width: 8px;
+  height: 2px;
+  background: var(--linie);
+}
+
+/* ----------------------------------------------------------- Tableiste --- */
+
+.tableiste {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 6;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--flaeche);
+  border-top: 1px solid var(--linie);
+}
+
+.tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0.25rem 0.55rem;
+  border: none;
+  border-top: 2px solid transparent;
+  background: none;
+  color: var(--text-leise);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.tab svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.tab[aria-current="page"] {
+  border-top-color: var(--akzent);
+  color: var(--akzent);
+}
+
+/* -------------------------------------------------------------- Dialog --- */
+
+.detail {
+  width: min(26rem, calc(100vw - 2rem));
+  padding: 1.1rem;
+  border: 1px solid var(--linie);
+  border-radius: 16px;
+  background: var(--flaeche);
+  color: var(--text);
+}
+
+.detail::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.detail h2 {
+  font-size: 1.05rem;
+}
+
+.detail .zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--linie);
+  font-size: 0.88rem;
+}
+
+.detail .zeile dt {
+  color: var(--text-leise);
+}
+
+.detail dl {
+  margin: 0.8rem 0 0;
+}
+
+.knopf-breit {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--akzent);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------ Größeres --- */
+
+@media (min-width: 700px) {
+  :root {
+    --spalte: 210px;
+    --raster-hoehe: 700px;
+  }
+
+  .kopf,
+  .inhalt {
+    max-width: 60rem;
+    margin: 0 auto;
+  }
+
+  .kopf {
+    max-width: none;
+    padding-inline: max(1rem, calc((100vw - 60rem) / 2));
+  }
+
+  .karten {
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+
+  .raster-huelle {
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  /* Auf großen Schirmen schwebt die Leiste als Pille über dem Inhalt */
+  .tableiste {
+    right: auto;
+    left: 50%;
+    bottom: 1.25rem;
+    width: auto;
+    transform: translateX(-50%);
+    border: 1px solid var(--linie);
+    border-radius: 999px;
+    background: var(--flaeche);
+    box-shadow: var(--schatten);
+  }
+
+  .tab {
+    flex-direction: row;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    white-space: nowrap;
+    border-top: none;
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+
+  .tab[aria-current="page"] {
+    background: var(--flaeche);
+  }
+}
