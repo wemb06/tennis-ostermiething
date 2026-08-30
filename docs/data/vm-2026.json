@@ -1,8 +1,8 @@
 {
   "verein": "UTC Ostermiething",
   "titel": "Vereinsmeisterschaft 2026",
-  "stand": "2026-08-30T20:10:02+02:00",
-  "hinweis": "Demo-Daten zum Ausprobieren. Ergebnisse bitte an die Turnierleitung melden.",
+  "stand": "2026-08-30T22:15:00+02:00",
+  "hinweis": "Ergebnis und Termin kann jede und jeder selbst eintragen: Spiel antippen.",
   "api": "https://script.google.com/macros/s/AKfycbxGjaCgXVS_FjbE4RnsOtcVqRVv5wiCY1bybg7ukEFXH5K78_E_h8AnH0LmTrbrfxrt/exec",
   "demo": true,
   "bewerbe": [
@@ -641,7 +641,7 @@
             ],
             "sieger": "heim"
           },
-          "top": true
+          "top": false
         },
         {
           "id": "B-R1-6",

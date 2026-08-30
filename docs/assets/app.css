@@ -745,3 +745,13 @@ button {
 .knopf-breit:disabled {
   opacity: 0.6;
 }
+
+.hinweis-band {
+  margin-bottom: 0.9rem;
+  padding: 0.55rem 0.75rem;
+  border-left: 3px solid var(--akzent);
+  border-radius: 0 10px 10px 0;
+  background: var(--flaeche);
+  color: var(--text-leise);
+  font-size: 0.82rem;
+}

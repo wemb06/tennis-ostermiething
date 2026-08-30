@@ -742,8 +742,12 @@ function zeichne() {
   const band = zustand.turnier.demo
     ? el('p', { class: 'demo-band', text: 'Demo-Daten — noch keine echten Nennungen eingetragen' })
     : null;
+  // Freitext aus der Turnierdatei — Platz für Ansagen der Turnierleitung
+  const hinweis = zustand.turnier.hinweis
+    ? el('p', { class: 'hinweis-band', text: zustand.turnier.hinweis })
+    : null;
 
-  knoten.inhalt.replaceChildren(...[band, ...teile].filter(Boolean));
+  knoten.inhalt.replaceChildren(...[band, hinweis, ...teile].filter(Boolean));
   for (const tab of knoten.tabs) {
     const aktiv = tab.dataset.ansicht === zustand.ansicht;
     tab.setAttribute('aria-current', aktiv ? 'page' : 'false');
