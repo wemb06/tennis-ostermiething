@@ -6,7 +6,25 @@ B-Bewerb — der Sieger eines Spiels rückt automatisch in die nächste Runde.
 
 **Live:** https://wemb06.github.io/tennis-ostermiething/ — ohne Login, gemacht fürs Handy.
 
-## Ergebnisse & Termine pflegen
+## Wer darf was eintragen
+
+**Jedes Vereinsmitglied** kann über den Link — ohne Login — bei einem spielbereiten Spiel
+
+- das **Ergebnis melden** (Sätze eintragen, der Sieger wird automatisch erkannt),
+- den **Termin und Platz eintragen** oder ändern,
+- ein Spiel **hervorheben** (★) — hervorgehobene Spiele stehen auf der Startseite ganz oben
+  unter „Im Blickpunkt".
+
+Jede Meldung landet als eigener Commit im Repo, mit dem Namen des Melders in der
+Commit-Nachricht. Ein Fehleintrag ist damit über die GitHub-Historie („Revert")
+zurückzunehmen. Bereits gewertete Spiele sind gesperrt — Korrekturen macht die
+Turnierleitung direkt in der Datei.
+
+Dafür muss die **Melde-API** einmalig eingerichtet sein: [backend/ANLEITUNG.md](backend/ANLEITUNG.md)
+(ca. 10 Minuten, Google-Apps-Script + GitHub-Token). Solange das Feld `api` in der
+Turnierdatei `null` ist, versteckt die Seite die Eintrage-Knöpfe von selbst.
+
+## Ergebnisse & Termine von Hand pflegen
 
 Alles steht in einer Datei: [docs/data/vm-2026.json](docs/data/vm-2026.json).
 
@@ -25,6 +43,8 @@ Alles steht in einer Datei: [docs/data/vm-2026.json](docs/data/vm-2026.json).
 | `node scripts/check-data.mjs` | Turnierdaten prüfen — vor jedem Push |
 | `scripts\New-Turnier.ps1 -A a.txt -B b.txt -Force` | Raster aus Spielerlisten neu erzeugen (Zeile = Name, Reihenfolge = Setzung) |
 | `node scripts/bilder.mjs` | App-Icons und WhatsApp-Vorschaubild neu zeichnen |
+
+Ein Spiel dauerhaft hervorheben geht auch direkt in der Datei: `"top": true` beim Spiel.
 
 Kein Build, keine Abhängigkeiten — `docs/` wird von GitHub Pages direkt ausgeliefert.
 Derzeit sind Demo-Daten eingespielt (`"demo": true`); die echten Nennungen kommen per

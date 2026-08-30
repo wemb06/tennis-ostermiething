@@ -599,3 +599,149 @@ button {
     background: var(--flaeche);
   }
 }
+
+/* ---------------------------------------------------- Blickpunkt & Stern -- */
+
+.stern {
+  color: var(--akzent);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.gruppe.blickpunkt .gruppe-titel {
+  color: var(--akzent);
+}
+
+.gruppe.blickpunkt .partie {
+  border-color: var(--akzent);
+}
+
+.partie-fuss.gemeldet {
+  color: var(--gruen);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- Formulare -- */
+
+.formular {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.9rem;
+}
+
+.formular-hinweis {
+  margin-top: 0.5rem;
+  color: var(--text-leise);
+  font-size: 0.85rem;
+}
+
+.formular-fehler {
+  min-height: 1.2em;
+  color: var(--akzent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.feld {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.feld > span {
+  color: var(--text-leise);
+  font-weight: 600;
+}
+
+.feld-zeile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feld input[type="text"],
+.feld input[type="date"],
+.feld input[type="time"],
+.saetze-gitter input {
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  background: var(--grund);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+
+.feld input:focus,
+.saetze-gitter input:focus {
+  outline: 2px solid var(--akzent);
+  outline-offset: 1px;
+}
+
+.saetze-gitter {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 1.4fr) repeat(3, minmax(3.2rem, 1fr));
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.saetze-gitter input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.satz-kopf {
+  color: var(--text-leise);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.satz-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sieger-wahl {
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.sieger-wahl label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sieger-wahl input {
+  accent-color: var(--akzent);
+}
+
+.feld-zeile input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--akzent);
+}
+
+.knopf-zeile {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.knopf-breit.zweitrangig {
+  background: var(--flaeche-2);
+  color: var(--text);
+}
+
+.detail .knopf-breit + .knopf-breit {
+  margin-top: 0.5rem;
+}
+
+.knopf-breit:disabled {
+  opacity: 0.6;
+}

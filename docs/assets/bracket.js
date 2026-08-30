@@ -166,6 +166,7 @@ export function bereiteBewerbAuf(bewerb) {
       runde: roh.runde,
       nr: nummern.get(roh.id) ?? 0,
       bewerbId: bewerb.id,
+      top: roh.top === true,
       bewerbName: bewerb.name,
       groesse: bewerb.groesse,
       rundeName: rundenName(bewerb.groesse, roh.runde),
@@ -267,6 +268,9 @@ export function pruefeTurnier(turnier) {
   if (turnier.stand && Number.isNaN(new Date(turnier.stand).getTime())) {
     fehler(`"stand" ist kein gültiger Zeitpunkt: ${turnier.stand}`);
   }
+  if (turnier.api !== undefined && turnier.api !== null && !/^https:\/\//.test(String(turnier.api))) {
+    fehler(`"api" muss eine https-Adresse oder null sein (ist: ${turnier.api}).`);
+  }
   if (!Array.isArray(turnier.bewerbe) || turnier.bewerbe.length === 0) {
     fehler('Keine Bewerbe vorhanden.');
     return meldungen;
@@ -340,6 +344,9 @@ export function pruefeTurnier(turnier) {
 
       if (spiel.termin && Number.isNaN(new Date(spiel.termin).getTime())) {
         fehler(`${wo}/${spiel.id}: Termin "${spiel.termin}" ist kein gültiges Datum.`);
+      }
+      if (spiel.top !== undefined && typeof spiel.top !== 'boolean') {
+        fehler(`${wo}/${spiel.id}: "top" muss true oder false sein.`);
       }
 
       const ergebnis = spiel.ergebnis;

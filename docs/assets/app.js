@@ -1,6 +1,7 @@
 /**
- * Dashboard der Vereinsmeisterschaft — Anzeige.
- * Die gesamte Turnierlogik steckt in bracket.js; hier wird nur dargestellt.
+ * Dashboard der Vereinsmeisterschaft — Anzeige und Eintragen.
+ * Die gesamte Turnierlogik steckt in bracket.js; hier wird dargestellt und
+ * werden Meldungen (Ergebnis/Termin) an die Melde-API geschickt.
  */
 
 import {
@@ -12,9 +13,12 @@ import {
   naechsteSpiele,
   rundenName,
   seitenName,
+  siegerAusSaetzen,
 } from './bracket.js';
 
 const ANSICHTEN = ['naechste', 'ergebnisse', 'raster'];
+const MERKER_SCHLUESSEL = 'vm-gemeldet';
+const NAME_SCHLUESSEL = 'vm-melder';
 
 const zustand = {
   turnier: null,
@@ -78,6 +82,68 @@ function tagesTitel(datum, heute) {
   return fmtTagKurz.format(datum);
 }
 
+/* -------------------------------------------- Gemeldet-Merker (dieses Handy) */
+
+function gelesenerMerker() {
+  try {
+    return JSON.parse(localStorage.getItem(MERKER_SCHLUESSEL)) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function merkeMeldung(spielId, typ) {
+  try {
+    const merker = gelesenerMerker();
+    merker[spielId] = { typ, zeit: Date.now() };
+    localStorage.setItem(MERKER_SCHLUESSEL, JSON.stringify(merker));
+  } catch {
+    /* privates Fenster o. Ä. — dann eben ohne Merker */
+  }
+}
+
+/** Der Name des Melders wird gemerkt, damit man ihn nur einmal tippen muss. */
+function gemerkterName() {
+  try {
+    return localStorage.getItem(NAME_SCHLUESSEL) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function merkeName(name) {
+  try {
+    if (name) localStorage.setItem(NAME_SCHLUESSEL, name);
+  } catch {
+    /* privates Fenster o. Ä. */
+  }
+}
+
+/** Merker löschen, sobald die Meldung in den geladenen Daten angekommen ist. */
+function raeumeMerkerAuf() {
+  try {
+    const merker = gelesenerMerker();
+    const spiele = new Map(alleSpiele(zustand.turnier).map((spiel) => [spiel.id, spiel]));
+    let geaendert = false;
+    for (const [id, eintrag] of Object.entries(merker)) {
+      const spiel = spiele.get(id);
+      const angekommen =
+        !spiel ||
+        (eintrag.typ === 'ergebnis' && spiel.ergebnis) ||
+        (eintrag.typ === 'termin' && spiel.termin) ||
+        Date.now() - eintrag.zeit > 3600_000;
+      if (angekommen) {
+        delete merker[id];
+        geaendert = true;
+      }
+    }
+    if (geaendert) localStorage.setItem(MERKER_SCHLUESSEL, JSON.stringify(merker));
+    return merker;
+  } catch {
+    return {};
+  }
+}
+
 /* -------------------------------------------------------------- Partien --- */
 
 /** Eine Seite der Partie: Name (oder "Sieger aus …") plus Satzergebnisse. */
@@ -117,13 +183,16 @@ function wannText(spiel, heute) {
   return { text: 'Termin offen', klasse: 'offen' };
 }
 
-function partieKarte(spiel, { zeigeZeit = true, zeigeDatum = false, heute = new Date() } = {}) {
+function partieKarte(spiel, { zeigeZeit = true, zeigeDatum = false, heute = new Date(), merker = {} } = {}) {
   const kopfRechts = zeigeDatum
     ? { text: alsDatum(spiel.datum) ? fmtTagKurz.format(alsDatum(spiel.datum)) : '', klasse: '' }
     : wannText(spiel, heute);
 
   const platz = spiel.platz && zeigeZeit ? el('div', { class: 'partie-fuss', text: spiel.platz }) : null;
   const notiz = spiel.ergebnis?.notiz ? el('div', { class: 'partie-fuss', text: spiel.ergebnis.notiz }) : null;
+  const gemeldet = merker[spiel.id]
+    ? el('div', { class: 'partie-fuss gemeldet', text: '✓ Meldung übermittelt — erscheint in Kürze' })
+    : null;
 
   return el(
     'button',
@@ -134,6 +203,7 @@ function partieKarte(spiel, { zeigeZeit = true, zeigeDatum = false, heute = new 
       el(
         'div',
         { class: 'links' },
+        spiel.top ? el('span', { class: 'stern', text: '★', title: 'Hervorgehobenes Spiel' }) : null,
         el('span', { class: 'marke', text: spiel.bewerbId }),
         el('span', { text: spiel.rundeName }),
       ),
@@ -142,13 +212,14 @@ function partieKarte(spiel, { zeigeZeit = true, zeigeDatum = false, heute = new 
     el('div', { class: 'seiten' }, seitenZeile(spiel, 'heim'), seitenZeile(spiel, 'gast')),
     platz,
     notiz,
+    gemeldet,
   );
 }
 
-function gruppe(titel, spiele, optionen) {
+function gruppe(titel, spiele, optionen, klasse = '') {
   return el(
     'section',
-    { class: 'gruppe' },
+    { class: `gruppe ${klasse}`.trim() },
     el(
       'h2',
       { class: 'gruppe-titel' },
@@ -170,14 +241,25 @@ function gefilterteSpiele() {
 
 function ansichtNaechste() {
   const heute = new Date();
+  const merker = raeumeMerkerAuf();
+  const optionen = { heute, merker };
   const spiele = naechsteSpiele(gefilterteSpiele());
   if (spiele.length === 0) {
     return [el('p', { class: 'leer', text: 'Derzeit ist kein Spiel spielbereit.' })];
   }
 
+  const teile = [];
+
+  // Markierte Spiele zuerst — die Turnierleitung (oder wer mag) hebt sie hervor
+  const markiert = spiele.filter((spiel) => spiel.top);
+  const rest = spiele.filter((spiel) => !spiel.top);
+  if (markiert.length > 0) {
+    teile.push(gruppe('★ Im Blickpunkt', markiert, optionen, 'blickpunkt'));
+  }
+
   // Gruppierung: überfällig → Tage aufsteigend → ohne Termin
   const gruppen = new Map();
-  for (const spiel of spiele) {
+  for (const spiel of rest) {
     const termin = alsDatum(spiel.termin);
     let schluessel;
     let titel;
@@ -195,9 +277,12 @@ function ansichtNaechste() {
     gruppen.get(schluessel).spiele.push(spiel);
   }
 
-  return [...gruppen.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, eintrag]) => gruppe(eintrag.titel, eintrag.spiele, { heute }));
+  teile.push(
+    ...[...gruppen.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, eintrag]) => gruppe(eintrag.titel, eintrag.spiele, optionen)),
+  );
+  return teile;
 }
 
 function ansichtErgebnisse() {
@@ -268,6 +353,309 @@ function ansichtRaster() {
     .map(rasterBlock);
 }
 
+/* --------------------------------------------------------------- Melden ---- */
+
+/**
+ * Schickt eine Meldung an die Melde-API (Google Apps Script → Commit ins Repo).
+ * text/plain vermeidet den CORS-Preflight, den Apps Script nicht beantwortet.
+ */
+async function sendeMeldung(nutzlast) {
+  const antwort = await fetch(zustand.turnier.api, {
+    method: 'POST',
+    body: JSON.stringify(nutzlast),
+  });
+  if (!antwort.ok) throw new Error(`Übertragung fehlgeschlagen (HTTP ${antwort.status})`);
+  const ergebnis = await antwort.json().catch(() => ({}));
+  if (ergebnis.ok !== true) throw new Error(ergebnis.fehler ?? 'Die Meldung wurde nicht angenommen.');
+  return ergebnis;
+}
+
+function feld(beschriftung, eingabe) {
+  return el('label', { class: 'feld' }, el('span', { text: beschriftung }), eingabe);
+}
+
+function meldeknopfzeile(sendenText) {
+  return el(
+    'div',
+    { class: 'knopf-zeile' },
+    el('button', { class: 'knopf-breit', type: 'submit', text: sendenText }),
+    el('button', {
+      class: 'knopf-breit zweitrangig',
+      type: 'button',
+      text: 'Zurück',
+      onclick: () => zeigeDetail(zustand.detailSpiel),
+    }),
+  );
+}
+
+async function verarbeiteFormular(formular, nutzlast, typ, spiel) {
+  const senden = formular.querySelector('button[type="submit"]');
+  const fehlerfeld = formular.querySelector('.formular-fehler');
+  senden.disabled = true;
+  senden.textContent = 'Wird übertragen …';
+  fehlerfeld.textContent = '';
+  try {
+    await sendeMeldung(nutzlast);
+    merkeName(nutzlast.von);
+    merkeMeldung(spiel.id, typ);
+    knoten.detailInhalt.replaceChildren(
+      el('h2', { text: 'Danke!' }),
+      el('p', {
+        class: 'formular-hinweis',
+        text:
+          typ === 'ergebnis'
+            ? 'Das Ergebnis ist übermittelt und erscheint in etwa einer Minute für alle.'
+            : 'Der Termin ist übermittelt und erscheint in etwa einer Minute für alle.',
+      }),
+    );
+    zeichne();
+  } catch (fehler) {
+    senden.disabled = false;
+    senden.textContent = typ === 'ergebnis' ? 'Ergebnis melden' : 'Termin speichern';
+    fehlerfeld.textContent = String(fehler.message ?? fehler);
+  }
+}
+
+function terminFormular(spiel) {
+  const terminAlt = alsDatum(spiel.termin);
+  const datum = el('input', {
+    type: 'date',
+    required: true,
+    value: terminAlt ? tagesSchluessel(terminAlt) : '',
+  });
+  const uhrzeit = el('input', {
+    type: 'time',
+    required: true,
+    value: terminAlt ? `${String(terminAlt.getHours()).padStart(2, '0')}:${String(terminAlt.getMinutes()).padStart(2, '0')}` : '',
+  });
+  const platzliste = el(
+    'datalist',
+    { id: 'platzliste' },
+    ['Platz 1', 'Platz 2', 'Platz 3'].map((p) => el('option', { value: p })),
+  );
+  const platz = el('input', { type: 'text', list: 'platzliste', maxlength: '40', value: spiel.platz ?? '', placeholder: 'z. B. Platz 2' });
+  const top = el('input', { type: 'checkbox' });
+  if (spiel.top) top.checked = true;
+  const von = el('input', { type: 'text', required: true, maxlength: '60', value: gemerkterName(), placeholder: 'damit man weiß, von wem die Meldung ist' });
+
+  const formular = el(
+    'form',
+    {
+      class: 'formular',
+      onsubmit: (ereignis) => {
+        ereignis.preventDefault();
+        verarbeiteFormular(
+          formular,
+          {
+            typ: 'termin',
+            spiel: spiel.id,
+            von: von.value.trim(),
+            termin: `${datum.value}T${uhrzeit.value}`,
+            platz: platz.value.trim() || null,
+            top: top.checked,
+          },
+          'termin',
+          spiel,
+        );
+      },
+    },
+    feld('Datum', datum),
+    feld('Uhrzeit', uhrzeit),
+    feld('Platz (optional)', platz),
+    platzliste,
+    el('label', { class: 'feld feld-zeile' }, top, el('span', { text: 'Spiel hervorheben („Im Blickpunkt")' })),
+    feld('Dein Name', von),
+    el('p', { class: 'formular-fehler' }),
+    meldeknopfzeile('Termin speichern'),
+  );
+
+  knoten.detailInhalt.replaceChildren(
+    el('h2', { text: 'Termin eintragen' }),
+    el('p', { class: 'formular-hinweis', text: `${seitenName(spiel.heim)} – ${seitenName(spiel.gast)} · ${spiel.rundeName}` }),
+    formular,
+  );
+}
+
+function ergebnisFormular(spiel) {
+  const saetzeEingaben = [1, 2, 3].map((nr) => {
+    const heim = el('input', { type: 'number', min: '0', max: '30', inputmode: 'numeric', 'aria-label': `Satz ${nr} ${seitenName(spiel.heim)}` });
+    const gast = el('input', { type: 'number', min: '0', max: '30', inputmode: 'numeric', 'aria-label': `Satz ${nr} ${seitenName(spiel.gast)}` });
+    return { heim, gast };
+  });
+  const notiz = el('input', { type: 'text', list: 'notizliste', maxlength: '60', placeholder: 'optional' });
+  const notizliste = el(
+    'datalist',
+    { id: 'notizliste' },
+    ['Match-Tiebreak', 'w.o.', 'Aufgabe'].map((n) => el('option', { value: n })),
+  );
+  const datum = el('input', { type: 'date', required: true, value: tagesSchluessel(new Date()) });
+  const von = el('input', { type: 'text', required: true, maxlength: '60', value: gemerkterName(), placeholder: 'damit man weiß, von wem die Meldung ist' });
+  const siegerHeim = el('input', { type: 'radio', name: 'sieger', value: 'heim', required: true });
+  const siegerGast = el('input', { type: 'radio', name: 'sieger', value: 'gast', required: true });
+  const vorschau = el('p', { class: 'formular-hinweis', text: 'Sätze eintragen — der Sieger wird automatisch erkannt.' });
+
+  function gelesenesSaetze() {
+    const saetze = [];
+    for (const { heim, gast } of saetzeEingaben) {
+      if (heim.value === '' && gast.value === '') continue;
+      if (heim.value === '' || gast.value === '') return null; // halb ausgefüllte Zeile
+      saetze.push([Number(heim.value), Number(gast.value)]);
+    }
+    return saetze;
+  }
+
+  function aktualisiereSieger() {
+    const saetze = gelesenesSaetze();
+    const berechnet = saetze ? siegerAusSaetzen(saetze) : null;
+    if (berechnet) {
+      (berechnet === 'heim' ? siegerHeim : siegerGast).checked = true;
+      vorschau.textContent = `Sieger laut Sätzen: ${seitenName(berechnet === 'heim' ? spiel.heim : spiel.gast)}`;
+    } else {
+      vorschau.textContent = 'Sätze eintragen — der Sieger wird automatisch erkannt. Bei w.o./Aufgabe den Sieger bitte selbst anhaken.';
+    }
+  }
+  for (const { heim, gast } of saetzeEingaben) {
+    heim.addEventListener('input', aktualisiereSieger);
+    gast.addEventListener('input', aktualisiereSieger);
+  }
+
+  const formular = el(
+    'form',
+    {
+      class: 'formular',
+      onsubmit: (ereignis) => {
+        ereignis.preventDefault();
+        const fehlerfeld = formular.querySelector('.formular-fehler');
+        const saetze = gelesenesSaetze();
+        if (saetze === null) {
+          fehlerfeld.textContent = 'Eine Satz-Zeile ist nur halb ausgefüllt.';
+          return;
+        }
+        const sieger = siegerHeim.checked ? 'heim' : 'gast';
+        if (saetze.length === 0 && !notiz.value.trim()) {
+          fehlerfeld.textContent = 'Ohne Sätze bitte eine Anmerkung angeben (z. B. w.o.).';
+          return;
+        }
+        const berechnet = siegerAusSaetzen(saetze);
+        if (berechnet && berechnet !== sieger && !notiz.value.trim()) {
+          fehlerfeld.textContent = 'Der angehakte Sieger passt nicht zu den Sätzen.';
+          return;
+        }
+        verarbeiteFormular(
+          formular,
+          {
+            typ: 'ergebnis',
+            spiel: spiel.id,
+            von: von.value.trim(),
+            ergebnis: {
+              datum: datum.value,
+              saetze,
+              sieger,
+              ...(notiz.value.trim() ? { notiz: notiz.value.trim() } : {}),
+            },
+          },
+          'ergebnis',
+          spiel,
+        );
+      },
+    },
+    el(
+      'div',
+      { class: 'saetze-gitter' },
+      el('span', {}),
+      el('span', { class: 'satz-kopf', text: 'Satz 1' }),
+      el('span', { class: 'satz-kopf', text: 'Satz 2' }),
+      el('span', { class: 'satz-kopf', text: '3. / MTB' }),
+      el('span', { class: 'satz-name', text: seitenName(spiel.heim) }),
+      saetzeEingaben.map(({ heim }) => heim),
+      el('span', { class: 'satz-name', text: seitenName(spiel.gast) }),
+      saetzeEingaben.map(({ gast }) => gast),
+    ),
+    vorschau,
+    el(
+      'div',
+      { class: 'feld feld-zeile sieger-wahl' },
+      el('span', { text: 'Sieger:' }),
+      el('label', {}, siegerHeim, el('span', { text: seitenName(spiel.heim) })),
+      el('label', {}, siegerGast, el('span', { text: seitenName(spiel.gast) })),
+    ),
+    feld('Gespielt am', datum),
+    feld('Anmerkung', notiz),
+    notizliste,
+    feld('Dein Name', von),
+    el('p', { class: 'formular-fehler' }),
+    meldeknopfzeile('Ergebnis melden'),
+  );
+
+  knoten.detailInhalt.replaceChildren(
+    el('h2', { text: 'Ergebnis melden' }),
+    el('p', { class: 'formular-hinweis', text: `${seitenName(spiel.heim)} – ${seitenName(spiel.gast)} · ${spiel.bewerbName}, ${spiel.rundeName}` }),
+    formular,
+  );
+}
+
+/**
+ * Spiel hervorheben oder Hervorhebung wegnehmen. Wer schon einmal gemeldet hat,
+ * dessen Name steckt im Merker — dann genügt ein Tipp.
+ */
+function markierungAendern(spiel, wert) {
+  const name = gemerkterName();
+  if (!name) {
+    namensAbfrage(spiel, wert);
+    return;
+  }
+  sendeMarkierung(spiel, wert, name);
+}
+
+async function sendeMarkierung(spiel, wert, name) {
+  const knopf = knoten.detailInhalt.querySelector('.markierung');
+  if (knopf) {
+    knopf.disabled = true;
+    knopf.textContent = 'Wird übertragen …';
+  }
+  try {
+    await sendeMeldung({ typ: 'markierung', spiel: spiel.id, von: name, top: wert });
+    merkeName(name);
+    const roh = await ladeTurnier().catch(() => null);
+    if (roh) uebernimm(roh);
+    const frisch = alleSpiele(zustand.turnier).find((s) => s.id === spiel.id) ?? { ...spiel, top: wert };
+    frisch.top = wert; // bis der Pages-Build durch ist, zeigen wir den gemeldeten Stand
+    zeigeDetail(frisch);
+    zeichne();
+  } catch (fehler) {
+    if (knopf) {
+      knopf.disabled = false;
+      knopf.textContent = wert ? '★ Hervorheben' : '★ Hervorhebung entfernen';
+    }
+    const meldung = knoten.detailInhalt.querySelector('.formular-fehler');
+    if (meldung) meldung.textContent = String(fehler.message ?? fehler);
+  }
+}
+
+/** Einmalige Namensabfrage, bevor das erste Mal markiert wird. */
+function namensAbfrage(spiel, wert) {
+  const von = el('input', { type: 'text', required: true, maxlength: '60', placeholder: 'Dein Name' });
+  const formular = el(
+    'form',
+    {
+      class: 'formular',
+      onsubmit: (ereignis) => {
+        ereignis.preventDefault();
+        sendeMarkierung(spiel, wert, von.value.trim());
+      },
+    },
+    feld('Dein Name', von),
+    el('p', { class: 'formular-fehler' }),
+    meldeknopfzeile(wert ? 'Hervorheben' : 'Hervorhebung entfernen'),
+  );
+  knoten.detailInhalt.replaceChildren(
+    el('h2', { text: wert ? 'Spiel hervorheben' : 'Hervorhebung entfernen' }),
+    el('p', { class: 'formular-hinweis', text: 'Damit nachvollziehbar bleibt, wer die Markierung gesetzt hat.' }),
+    formular,
+  );
+  von.focus();
+}
+
 /* ---------------------------------------------------------------- Detail -- */
 
 function detailZeile(bezeichnung, wert) {
@@ -276,6 +664,7 @@ function detailZeile(bezeichnung, wert) {
 }
 
 function zeigeDetail(spiel) {
+  zustand.detailSpiel = spiel;
   const termin = alsDatum(spiel.termin);
   const datum = alsDatum(spiel.datum);
   const deadline = alsDatum(spiel.deadline);
@@ -286,6 +675,40 @@ function zeigeDetail(spiel) {
     wartet: 'wartet auf die Vorrunde',
     freilos: 'Freilos — Aufstieg ohne Spiel',
   }[spiel.status];
+
+  // Eintragen: für alle offen — Ergebnis, sobald das Spiel spielbereit ist,
+  // Termin, solange noch kein Ergebnis feststeht.
+  const aktionen = [];
+  if (zustand.turnier.api) {
+    if (spiel.status === 'spielbereit') {
+      aktionen.push(el('button', { class: 'knopf-breit', type: 'button', text: 'Ergebnis melden', onclick: () => ergebnisFormular(spiel) }));
+      aktionen.push(
+        el('button', {
+          class: 'knopf-breit zweitrangig',
+          type: 'button',
+          text: spiel.termin ? 'Termin ändern' : 'Termin eintragen',
+          onclick: () => terminFormular(spiel),
+        }),
+      );
+    } else if (spiel.status === 'gespielt') {
+      aktionen.push(el('p', { class: 'formular-hinweis', text: 'Falsch eingetragen? Bitte kurz der Turnierleitung schreiben.' }));
+    }
+    // Hervorheben geht auch ohne Termin — und auch für Spiele, die noch auf
+    // die Vorrunde warten (z. B. um das Finale vorab anzukündigen).
+    if (spiel.status !== 'gespielt' && spiel.status !== 'freilos') {
+      aktionen.push(
+        el('button', {
+          class: 'knopf-breit zweitrangig markierung',
+          type: 'button',
+          text: spiel.top ? '★ Hervorhebung entfernen' : '★ Hervorheben',
+          onclick: () => markierungAendern(spiel, !spiel.top),
+        }),
+      );
+      aktionen.push(el('p', { class: 'formular-fehler' }));
+    }
+  } else if (spiel.status === 'spielbereit') {
+    aktionen.push(el('p', { class: 'formular-hinweis', text: 'Online-Eintragen wird gerade eingerichtet — Ergebnis bitte an die Turnierleitung melden.' }));
+  }
 
   knoten.detailInhalt.replaceChildren(
     el('h2', { text: `${spiel.bewerbName} · ${spiel.rundeName}` }),
@@ -300,8 +723,9 @@ function zeigeDetail(spiel) {
       detailZeile('Spätestens bis', !termin && deadline ? fmtTagLang.format(deadline) : null),
       detailZeile('Anmerkung', spiel.ergebnis?.notiz),
     ),
+    ...aktionen,
   );
-  knoten.detail.showModal();
+  if (!knoten.detail.open) knoten.detail.showModal();
 }
 
 /* ------------------------------------------------------------- Steuerung -- */
@@ -365,16 +789,38 @@ function schreibeAdresse() {
   if (window.location.hash !== ziel) window.history.replaceState(null, '', ziel);
 }
 
+function uebernimm(roh) {
+  zustand.turnier = bereiteTurnierAuf(roh);
+  zustand.geladen = Date.now();
+  document.title = `${roh.verein} — ${roh.titel}`;
+  zeigeStand();
+  zeichneBewerbwahl();
+  zeichne();
+}
+
+/**
+ * Frische Daten direkt von der Melde-API (umgeht den Pages-Rebuild von ~1 min).
+ * Läuft nach dem normalen Laden im Hintergrund; bei Fehlern bleibt einfach
+ * der Stand aus der statischen Datei.
+ */
+async function holeFrischeDaten() {
+  const api = zustand.turnier?.api;
+  if (!api) return;
+  try {
+    const antwort = await fetch(`${api}?daten=1`, { redirect: 'follow' });
+    if (!antwort.ok) return;
+    const frisch = await antwort.json();
+    if (frisch?.bewerbe && frisch.stand !== zustand.turnier.stand) uebernimm(frisch);
+  } catch {
+    /* offline oder API kalt — macht nichts */
+  }
+}
+
 async function laden({ still = false } = {}) {
   if (!still) knoten.aktualisieren.classList.add('laeuft');
   try {
-    const roh = await ladeTurnier();
-    zustand.turnier = bereiteTurnierAuf(roh);
-    zustand.geladen = Date.now();
-    document.title = `${roh.verein} — ${roh.titel}`;
-    zeigeStand();
-    zeichneBewerbwahl();
-    zeichne();
+    uebernimm(await ladeTurnier());
+    holeFrischeDaten();
   } catch (fehler) {
     knoten.inhalt.replaceChildren(
       el(

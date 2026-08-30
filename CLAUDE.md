@@ -23,6 +23,10 @@ nicht die Dokumentation.** Push nach `main` = online.
 - `docs/assets/app.js` / `app.css` — nur Darstellung, mobile-first, hell/dunkel automatisch
 - `docs/data/vm-2026.json` — die einzige Datenquelle (Spieler, Spiele, Ergebnisse)
 - `scripts/` — Werkzeuge (Node ohne npm-Pakete bzw. PowerShell)
+- `backend/apps-script.gs` — Melde-API als Google-Apps-Script: nimmt Ergebnis-, Termin-
+  und Markierungs-Meldungen entgegen, prüft sie und schreibt sie als Commit ins Repo.
+  Einrichtung: `backend/ANLEITUNG.md`. Die URL steht im Feld `api` der Turnierdatei;
+  ist sie `null`, blendet die Seite alle Eintrage-Knöpfe aus.
 
 ## Datenmodell — der zentrale Kniff
 
@@ -31,6 +35,8 @@ Spiele speichern keine Namen, sondern **Referenzen**:
 Wer im Halbfinale steht, wird beim Anzeigen aus dem Viertelfinal-Ergebnis aufgelöst —
 ein eingetragener Sieger rückt dadurch automatisch weiter. Ergebnis-Format:
 `{"datum":"2026-08-29","saetze":[[6,4],[3,6],[10,7]],"sieger":"heim","notiz":"Match-Tiebreak"}`.
+`"top": true` hebt ein Spiel hervor — solche Spiele stehen auf der Startseite ganz oben
+unter „Im Blickpunkt".
 Termine sind gemischt: fixer `termin` **oder** `null` = „Termin offen" mit Runden-Deadline
 aus `deadlines`. Spieler namens `Freilos` (oder unbesetzte Positionen) lassen den Gegner
 kampflos aufsteigen.
