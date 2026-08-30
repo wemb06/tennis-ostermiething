@@ -67,6 +67,14 @@ export function saetzeText(spiel) {
     .join('  ');
 }
 
+/**
+ * Bewerbe mit `"sichtbar": false` bleiben auf der Seite komplett ausgeblendet —
+ * kein Tab, keine Spiele in der Startansicht. Fehlt das Feld, ist der Bewerb sichtbar.
+ */
+export function istSichtbar(bewerb) {
+  return bewerb?.sichtbar !== false;
+}
+
 /** Anzeigename einer Seite: entweder der Spieler oder die Herkunft ("Sieger aus …"). */
 export function seitenName(seite) {
   if (!seite) return 'offen';
@@ -284,6 +292,9 @@ export function pruefeTurnier(turnier) {
       continue;
     }
     const runden = anzahlRunden(groesse);
+    if (bewerb.sichtbar !== undefined && typeof bewerb.sichtbar !== 'boolean') {
+      fehler(`${wo}: "sichtbar" muss true oder false sein.`);
+    }
 
     // Spieler: Positionen 1..groesse, jede genau einmal
     const positionen = new Set();

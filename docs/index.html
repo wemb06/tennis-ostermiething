@@ -6,7 +6,7 @@
     <title>UTC Ostermiething — Vereinsmeisterschaft 2026</title>
     <meta
       name="description"
-      content="Spielplan und Ergebnisse der Vereinsmeisterschaft 2026 des UTC Ostermiething: nächste Spiele, Resultate und das Raster von A- und B-Bewerb."
+      content="Vereinsmeisterschaft 2026 des UTC Ostermiething: welche Spiele als Nächstes anstehen und wie das Raster aktuell steht."
     />
     <meta name="theme-color" content="#c25a2e" />
 
@@ -16,7 +16,7 @@
     <meta property="og:title" content="Vereinsmeisterschaft 2026 — Spielplan & Ergebnisse" />
     <meta
       property="og:description"
-      content="Wer spielt als Nächstes, wann und auf welchem Platz? Alle Ergebnisse und das Raster von A- und B-Bewerb."
+      content="Wer spielt als Nächstes, wann und auf welchem Platz? Dazu der aktuelle Stand im Raster."
     />
     <meta property="og:url" content="https://wemb06.github.io/tennis-ostermiething/" />
     <meta property="og:image" content="https://wemb06.github.io/tennis-ostermiething/bilder/og-bild.png" />
@@ -48,51 +48,13 @@
         </button>
       </div>
       <p id="stand" class="stand">Daten werden geladen …</p>
-      <div id="bewerbwahl" class="segment" role="group" aria-label="Bewerb wählen"></div>
     </header>
 
     <main id="inhalt" class="inhalt" aria-live="polite">
       <p class="hinweis-laden">Spielplan wird geladen …</p>
     </main>
 
-    <nav class="tableiste" aria-label="Ansicht">
-      <button type="button" class="tab" data-ansicht="naechste">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path
-            d="M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-        </svg>
-        <span>Nächste Spiele</span>
-      </button>
-      <button type="button" class="tab" data-ansicht="ergebnisse">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path
-            d="M4 7h16M4 12h16M4 17h9"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-        </svg>
-        <span>Ergebnisse</span>
-      </button>
-      <button type="button" class="tab" data-ansicht="raster">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path
-            d="M3 5h6v4H3zM3 15h6v4H3zM13 10h6v4h-6zM9 7h2v5h2M9 17h2v-5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <span>Raster</span>
-      </button>
-    </nav>
+    <nav class="tableiste" aria-label="Ansicht"></nav>
 
     <dialog id="detail" class="detail">
       <div id="detail-inhalt"></div>

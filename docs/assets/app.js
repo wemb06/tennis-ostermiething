@@ -8,7 +8,7 @@ import {
   alleSpiele,
   anzahlRunden,
   bereiteTurnierAuf,
-  gespielteSpiele,
+  istSichtbar,
   ladeTurnier,
   naechsteSpiele,
   rundenName,
@@ -16,7 +16,7 @@ import {
   siegerAusSaetzen,
 } from './bracket.js';
 
-const ANSICHTEN = ['naechste', 'ergebnisse', 'raster'];
+// Ansichten: 'naechste' = Startseite, sonst die ID eines Bewerbs (Raster)
 const MERKER_SCHLUESSEL = 'vm-gemeldet';
 const NAME_SCHLUESSEL = 'vm-melder';
 
@@ -30,11 +30,10 @@ const zustand = {
 const knoten = {
   inhalt: document.getElementById('inhalt'),
   stand: document.getElementById('stand'),
-  bewerbwahl: document.getElementById('bewerbwahl'),
+  tableiste: document.querySelector('.tableiste'),
   aktualisieren: document.getElementById('aktualisieren'),
   detail: document.getElementById('detail'),
   detailInhalt: document.getElementById('detail-inhalt'),
-  tabs: [...document.querySelectorAll('.tab')],
 };
 
 /* ------------------------------------------------------------- Werkzeug --- */
@@ -238,11 +237,13 @@ function gruppe(titel, spiele, optionen, klasse = '') {
 
 /* ------------------------------------------------------------- Ansichten -- */
 
+function sichtbareBewerbe() {
+  return (zustand.turnier?.bewerbe ?? []).filter(istSichtbar);
+}
+
+/** Spiele aller sichtbaren Bewerbe — Grundlage der Startseite. */
 function gefilterteSpiele() {
-  const bewerbe = zustand.turnier.bewerbe.filter(
-    (bewerb) => zustand.bewerb === 'alle' || bewerb.id === zustand.bewerb,
-  );
-  return bewerbe.flatMap((bewerb) => bewerb.spiele);
+  return sichtbareBewerbe().flatMap((bewerb) => bewerb.spiele);
 }
 
 function ansichtNaechste() {
@@ -291,27 +292,6 @@ function ansichtNaechste() {
   return teile;
 }
 
-function ansichtErgebnisse() {
-  const heute = new Date();
-  const spiele = gespielteSpiele(gefilterteSpiele());
-  if (spiele.length === 0) {
-    return [el('p', { class: 'leer', text: 'Noch kein Spiel gewertet.' })];
-  }
-
-  const gruppen = new Map();
-  for (const spiel of spiele) {
-    const datum = alsDatum(spiel.datum);
-    const schluessel = datum ? tagesSchluessel(datum) : 'ohne';
-    const titel = datum ? `${tagesTitel(datum, heute)} · ${fmtTagLang.format(datum)}` : 'Ohne Datum';
-    if (!gruppen.has(schluessel)) gruppen.set(schluessel, { titel, spiele: [] });
-    gruppen.get(schluessel).spiele.push(spiel);
-  }
-
-  return [...gruppen.entries()]
-    .sort(([a], [b]) => (a === 'ohne' ? 1 : b === 'ohne' ? -1 : b.localeCompare(a)))
-    .map(([, eintrag]) => gruppe(eintrag.titel, eintrag.spiele, { zeigeDatum: true, heute }));
-}
-
 function rasterBlock(bewerb) {
   const runden = anzahlRunden(bewerb.groesse);
   const spalten = [];
@@ -345,7 +325,6 @@ function rasterBlock(bewerb) {
   return el(
     'section',
     { class: 'raster-block' },
-    el('h2', { class: 'raster-titel', text: bewerb.name }),
     bewerb.meister
       ? el('p', { class: 'meister' }, el('span', { text: '🏆' }), el('span', { text: `Vereinsmeister: ${bewerb.meister.name}` }))
       : null,
@@ -353,10 +332,11 @@ function rasterBlock(bewerb) {
   );
 }
 
-function ansichtRaster() {
-  return zustand.turnier.bewerbe
-    .filter((bewerb) => zustand.bewerb === 'alle' || bewerb.id === zustand.bewerb)
-    .map(rasterBlock);
+/** Raster genau eines Bewerbs — das ist der Inhalt der Bewerb-Tabs. */
+function ansichtBewerb(bewerbId) {
+  const bewerb = sichtbareBewerbe().find((b) => b.id === bewerbId);
+  if (!bewerb) return [el('p', { class: 'leer', text: 'Dieser Bewerb ist derzeit nicht freigeschaltet.' })];
+  return [rasterBlock(bewerb)];
 }
 
 /* --------------------------------------------------------------- Melden ---- */
@@ -741,63 +721,88 @@ function zeigeDetail(spiel) {
 function zeichne() {
   if (!zustand.turnier) return;
 
-  const teile = {
-    naechste: ansichtNaechste,
-    ergebnisse: ansichtErgebnisse,
-    raster: ansichtRaster,
-  }[zustand.ansicht]();
+  const teile = zustand.ansicht === 'naechste' ? ansichtNaechste() : ansichtBewerb(zustand.ansicht);
 
   const band = zustand.turnier.demo
     ? el('p', { class: 'demo-band', text: 'Demo-Daten — noch keine echten Nennungen eingetragen' })
     : null;
   // Freitext aus der Turnierdatei — Platz für Ansagen der Turnierleitung
-  const hinweis = zustand.turnier.hinweis
+  const hinweis = zustand.turnier.hinweis && zustand.ansicht === 'naechste'
     ? el('p', { class: 'hinweis-band', text: zustand.turnier.hinweis })
     : null;
 
   knoten.inhalt.replaceChildren(...[band, hinweis, ...teile].filter(Boolean));
-  for (const tab of knoten.tabs) {
-    const aktiv = tab.dataset.ansicht === zustand.ansicht;
-    tab.setAttribute('aria-current', aktiv ? 'page' : 'false');
-  }
+  zeichneTabs();
   window.scrollTo({ top: 0 });
 }
 
-function zeichneBewerbwahl() {
-  const auswahl = [{ id: 'alle', name: 'Alle' }, ...zustand.turnier.bewerbe.map((b) => ({ id: b.id, name: b.name }))];
-  knoten.bewerbwahl.replaceChildren(
-    ...auswahl.map((eintrag) =>
-      el('button', {
-        type: 'button',
-        text: eintrag.name,
-        'aria-pressed': String(zustand.bewerb === eintrag.id),
-        onclick: () => {
-          zustand.bewerb = eintrag.id;
-          schreibeAdresse();
-          zeichneBewerbwahl();
-          zeichne();
+const SYMBOLE = {
+  kalender: 'M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z',
+  raster: 'M3 5h6v4H3zM3 15h6v4H3zM13 10h6v4h-6zM9 7h2v5h2M9 17h2v-5',
+};
+
+function symbol(pfad) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const bild = document.createElementNS(NS, 'svg');
+  bild.setAttribute('viewBox', '0 0 24 24');
+  bild.setAttribute('aria-hidden', 'true');
+  const linie = document.createElementNS(NS, 'path');
+  linie.setAttribute('d', pfad);
+  linie.setAttribute('fill', 'none');
+  linie.setAttribute('stroke', 'currentColor');
+  linie.setAttribute('stroke-width', '1.8');
+  linie.setAttribute('stroke-linecap', 'round');
+  linie.setAttribute('stroke-linejoin', 'round');
+  bild.append(linie);
+  return bild;
+}
+
+/** Tableiste: Startseite plus ein Tab je freigeschaltetem Bewerb. */
+function zeichneTabs() {
+  const eintraege = [
+    { id: 'naechste', name: 'Nächste Spiele', symbol: SYMBOLE.kalender },
+    ...sichtbareBewerbe().map((bewerb) => ({ id: bewerb.id, name: bewerb.name, symbol: SYMBOLE.raster })),
+  ];
+  knoten.tableiste.replaceChildren(
+    ...eintraege.map((eintrag) =>
+      el(
+        'button',
+        {
+          class: 'tab',
+          type: 'button',
+          'aria-current': zustand.ansicht === eintrag.id ? 'page' : 'false',
+          onclick: () => {
+            zustand.ansicht = eintrag.id;
+            schreibeAdresse();
+            zeichne();
+          },
         },
-      }),
+        symbol(eintrag.symbol),
+        el('span', { text: eintrag.name }),
+      ),
     ),
   );
 }
 
 function zeigeStand() {
   const stand = alsDatum(zustand.turnier?.stand);
-  const anzahl = zustand.turnier ? alleSpiele(zustand.turnier).length : 0;
+  // Nur freigeschaltete Bewerbe zaehlen — versteckte gibt es fuer Besucher nicht
+  const anzahl = gefilterteSpiele().length;
   knoten.stand.textContent = stand
     ? `Stand: ${fmtStand.format(stand)} Uhr · ${anzahl} Spiele im Raster`
     : `${anzahl} Spiele im Raster`;
 }
 
 function lesAdresse() {
-  const [ansicht, bewerb] = window.location.hash.replace('#', '').split('/');
-  if (ANSICHTEN.includes(ansicht)) zustand.ansicht = ansicht;
-  if (bewerb) zustand.bewerb = bewerb;
+  const [teil1, teil2] = window.location.hash.replace('#', '').split('/');
+  const bekannt = (id) => sichtbareBewerbe().some((bewerb) => bewerb.id === id);
+  if (teil1 === 'raster' && bekannt(teil2)) zustand.ansicht = teil2; // alter Link
+  else if (bekannt(teil1)) zustand.ansicht = teil1;
+  else zustand.ansicht = 'naechste';
 }
 
 function schreibeAdresse() {
-  const ziel = `#${zustand.ansicht}${zustand.bewerb !== 'alle' ? `/${zustand.bewerb}` : ''}`;
+  const ziel = `#${zustand.ansicht}`;
   if (window.location.hash !== ziel) window.history.replaceState(null, '', ziel);
 }
 
@@ -806,7 +811,7 @@ function uebernimm(roh) {
   zustand.geladen = Date.now();
   document.title = `${roh.verein} — ${roh.titel}`;
   zeigeStand();
-  zeichneBewerbwahl();
+  lesAdresse(); // erst mit geladenen Daten ist klar, welche Bewerbe es gibt
   zeichne();
 }
 
@@ -848,19 +853,10 @@ async function laden({ still = false } = {}) {
   }
 }
 
-for (const tab of knoten.tabs) {
-  tab.addEventListener('click', () => {
-    zustand.ansicht = tab.dataset.ansicht;
-    schreibeAdresse();
-    zeichne();
-  });
-}
-
 knoten.aktualisieren.addEventListener('click', () => laden());
 
 window.addEventListener('hashchange', () => {
   lesAdresse();
-  zeichneBewerbwahl();
   zeichne();
 });
 
@@ -869,5 +865,4 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && Date.now() - zustand.geladen > 60_000) laden({ still: true });
 });
 
-lesAdresse();
 laden();
