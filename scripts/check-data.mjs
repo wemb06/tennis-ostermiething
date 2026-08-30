@@ -17,6 +17,7 @@ import {
   saetzeText,
   seitenName,
 } from '../docs/assets/bracket.js';
+import { pruefeVersion } from './version.mjs';
 
 const pfad = process.argv[2]
   ? process.argv[2]
@@ -76,6 +77,16 @@ console.log('');
 
 for (const meldung of warnungen) console.log(`WARNUNG  ${meldung.text}`);
 for (const meldung of fehler) console.error(`FEHLER   ${meldung.text}`);
+
+const version = pruefeVersion();
+if (!version.aktuell) {
+  console.error(
+    `FEHLER   Versionsstempel veraltet (erwartet ${version.erwartet}, gefunden ${version.gefunden.join(', ')}).`,
+  );
+  console.error('         "node scripts/version.mjs" ausfuehren und mitcommitten — sonst mischen');
+  console.error('         Browser nach dem Deploy neues HTML mit alter app.js.');
+  fehler.push({ stufe: 'fehler', text: 'Versionsstempel veraltet' });
+}
 
 if (fehler.length > 0) {
   console.error(`\n${fehler.length} Fehler — Datei ist nicht veroeffentlichungsreif.`);

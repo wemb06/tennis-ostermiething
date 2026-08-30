@@ -14,7 +14,7 @@ import {
   rundenName,
   seitenName,
   siegerAusSaetzen,
-} from './bracket.js';
+} from './bracket.js?v=9e77d220';
 
 // Ansichten: 'naechste' = Startseite, sonst die ID eines Bewerbs (Raster)
 const MERKER_SCHLUESSEL = 'vm-gemeldet';
@@ -846,6 +846,13 @@ async function laden({ still = false } = {}) {
         el('p', { text: 'Der Spielplan konnte nicht geladen werden.' }),
         el('p', { text: String(fehler.message ?? fehler) }),
         el('button', { class: 'knopf-breit', type: 'button', text: 'Nochmal versuchen', onclick: () => laden() }),
+        // Haeufigster Fall: der Browser haelt noch eine alte Fassung der Seite
+        el('button', {
+          class: 'knopf-breit zweitrangig',
+          type: 'button',
+          text: 'Seite neu laden',
+          onclick: () => window.location.reload(),
+        }),
       ),
     );
   } finally {

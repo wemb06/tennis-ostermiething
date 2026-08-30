@@ -49,7 +49,12 @@ kampflos aufsteigen.
 
 ## Workflows
 
-- **Daten prüfen (vor jedem Push!):** `node scripts/check-data.mjs`
+- **Daten prüfen (vor jedem Push!):** `node scripts/check-data.mjs` — prüft auch den
+  Versionsstempel und schlägt fehl, wenn er fehlt
+- **Nach jeder Änderung an app.js/app.css/bracket.js:** `node scripts/version.mjs`
+  stempelt ein `?v=<Kürzel>` in die Adressen von CSS/JS. GitHub Pages cacht zehn
+  Minuten; ohne den Stempel kann ein Browser neues HTML mit alter app.js mischen —
+  die Seite bricht dann mit einem Folgefehler ab.
 - **Vorschau:** `node scripts/serve.mjs` → `http://localhost:4173`, im WLAN auch am Handy
 - **Neues Turnier / echte Nennungen einspielen:** `scripts\New-Turnier.ps1 -A liste-a.txt -B liste-b.txt -Force`
   (eine Zeile pro Name, Reihenfolge = Setzung; überschreibt vorhandene Ergebnisse!)

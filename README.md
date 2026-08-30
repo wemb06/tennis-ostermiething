@@ -41,7 +41,8 @@ Alles steht in einer Datei: [docs/data/vm-2026.json](docs/data/vm-2026.json).
 | Befehl | Zweck |
 |---|---|
 | `node scripts/serve.mjs` | Lokale Vorschau (`http://localhost:4173`, im WLAN auch am Handy) |
-| `node scripts/check-data.mjs` | Turnierdaten prüfen — vor jedem Push |
+| `node scripts/check-data.mjs` | Turnierdaten und Versionsstempel prüfen — vor jedem Push |
+| `node scripts/version.mjs` | Versionsstempel setzen — nach jeder Änderung an app.js/app.css/bracket.js |
 | `scripts\New-Turnier.ps1 -A a.txt -B b.txt -Force` | Raster aus Spielerlisten neu erzeugen (Zeile = Name, Reihenfolge = Setzung) |
 | `node scripts/bilder.mjs` | App-Icons und WhatsApp-Vorschaubild neu zeichnen |
 
