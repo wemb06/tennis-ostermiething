@@ -14,7 +14,7 @@ import {
   rundenName,
   seitenName,
   siegerAusSaetzen,
-} from './bracket.js?v=9e77d220';
+} from './bracket.js?v=2429006b';
 
 // Ansichten: 'naechste' = Startseite, sonst die ID eines Bewerbs (Raster)
 const MERKER_SCHLUESSEL = 'vm-gemeldet';

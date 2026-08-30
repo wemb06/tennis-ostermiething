@@ -306,12 +306,15 @@ export function pruefeTurnier(turnier) {
       } else {
         positionen.add(spieler.pos);
       }
-      if (!String(spieler.name ?? '').trim()) {
+      // Ein versteckter Bewerb ist noch in Vorbereitung — Lücken sind dort normal
+      if (!String(spieler.name ?? '').trim() && istSichtbar(bewerb)) {
         warnung(`${wo}: Position ${spieler.pos} hat keinen Namen — gilt als Freilos.`);
       }
     }
-    for (let pos = 1; pos <= groesse; pos += 1) {
-      if (!positionen.has(pos)) warnung(`${wo}: Rasterposition ${pos} ist unbesetzt — gilt als Freilos.`);
+    if (istSichtbar(bewerb)) {
+      for (let pos = 1; pos <= groesse; pos += 1) {
+        if (!positionen.has(pos)) warnung(`${wo}: Rasterposition ${pos} ist unbesetzt — gilt als Freilos.`);
+      }
     }
 
     // Spiele: vollständiges Raster, eindeutige IDs, saubere Referenzen

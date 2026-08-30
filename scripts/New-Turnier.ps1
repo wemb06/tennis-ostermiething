@@ -30,6 +30,9 @@ param(
     [string]$Hinweis = 'Ergebnisse bitte an die Turnierleitung melden.',
     # Deadline je Runde (Runde 1 zuerst); leer lassen, wenn es keine gibt
     [string[]]$Deadlines = @(),
+    # Liste steht bereits in Rasterreihenfolge: Zeile 1+2 = erstes Spiel, 3+4 = zweites usw.
+    # Ohne diesen Schalter gilt die Reihenfolge als Setzung und wird aufs Raster verteilt.
+    [switch]$Rasterreihenfolge,
     [switch]$Demo,
     [switch]$Force
 )
@@ -70,22 +73,31 @@ function Get-Namen {
 }
 
 function New-Bewerb {
-    param([string]$Id, [string]$Name, [string[]]$Namen, [int]$Groesse, [string[]]$Deadlines)
+    param([string]$Id, [string]$Name, [string[]]$Namen, [int]$Groesse, [string[]]$Deadlines,
+        [bool]$NachRaster)
 
+    if (-not $Namen) { $Namen = @() }
     if ($Namen.Count -gt $Groesse) {
         throw "$Name : $($Namen.Count) Namen passen nicht in ein ${Groesse}er-Raster."
     }
     $runden = [int][Math]::Log($Groesse, 2)
     $setzung = Get-Setzreihenfolge -Groesse $Groesse
 
-    # Setzung Nr. n (1 = stärkster) landet auf jener Rasterposition,
-    # an der ihre Nummer in der Setzreihenfolge steht.
     $spieler = @()
     for ($pos = 1; $pos -le $Groesse; $pos++) {
-        $setznummer = $setzung[$pos - 1]
-        $spielerName = if ($setznummer -le $Namen.Count) { $Namen[$setznummer - 1] } else { 'Freilos' }
-        $eintrag = [ordered]@{ pos = $pos; name = $spielerName }
-        if ($setznummer -le 4 -and $setznummer -le $Namen.Count) { $eintrag['setzung'] = $setznummer }
+        if ($NachRaster) {
+            # Liste ist bereits das Raster: Zeile n steht auf Position n
+            $spielerName = if ($pos -le $Namen.Count) { $Namen[$pos - 1] } else { 'Freilos' }
+            $eintrag = [ordered]@{ pos = $pos; name = $spielerName }
+        }
+        else {
+            # Setzung Nr. n (1 = stärkster) landet auf jener Rasterposition,
+            # an der ihre Nummer in der Setzreihenfolge steht.
+            $setznummer = $setzung[$pos - 1]
+            $spielerName = if ($setznummer -le $Namen.Count) { $Namen[$setznummer - 1] } else { 'Freilos' }
+            $eintrag = [ordered]@{ pos = $pos; name = $spielerName }
+            if ($setznummer -le 4 -and $setznummer -le $Namen.Count) { $eintrag['setzung'] = $setznummer }
+        }
         $spieler += [pscustomobject]$eintrag
     }
 
@@ -138,8 +150,8 @@ $turnier = [ordered]@{
 }
 if ($Demo) { $turnier['demo'] = $true }
 $turnier['bewerbe'] = @(
-    (New-Bewerb -Id 'A' -Name 'A-Bewerb' -Namen (Get-Namen $A) -Groesse $Groesse -Deadlines $Deadlines),
-    (New-Bewerb -Id 'B' -Name 'B-Bewerb' -Namen (Get-Namen $B) -Groesse $Groesse -Deadlines $Deadlines)
+    (New-Bewerb -Id 'A' -Name 'A-Bewerb' -Namen (Get-Namen $A) -Groesse $Groesse -Deadlines $Deadlines -NachRaster $Rasterreihenfolge),
+    (New-Bewerb -Id 'B' -Name 'B-Bewerb' -Namen (Get-Namen $B) -Groesse $Groesse -Deadlines $Deadlines -NachRaster $Rasterreihenfolge)
 )
 
 $json = [pscustomobject]$turnier | ConvertTo-Json -Depth 12

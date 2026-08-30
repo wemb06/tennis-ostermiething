@@ -1,89 +1,79 @@
 {
   "verein": "UTC Ostermiething",
   "titel": "Vereinsmeisterschaft 2026",
-  "stand": "2026-08-30T22:45:00+02:00",
+  "stand": "2026-08-30T21:00:00+02:00",
   "hinweis": "Ergebnis und Termin kann jede und jeder selbst eintragen: Spiel antippen.",
   "api": "https://script.google.com/macros/s/AKfycbxGjaCgXVS_FjbE4RnsOtcVqRVv5wiCY1bybg7ukEFXH5K78_E_h8AnH0LmTrbrfxrt/exec",
-  "demo": true,
   "bewerbe": [
     {
       "id": "A",
       "name": "A-Bewerb",
       "groesse": 16,
-      "deadlines": {
-        "1": "2026-09-01",
-        "2": "2026-09-08",
-        "3": "2026-09-15",
-        "4": "2026-09-22"
-      },
+      "deadlines": {},
       "spieler": [
         {
           "pos": 1,
-          "name": "Thomas Bauer",
-          "setzung": 1
+          "name": "Holzner Sebastian"
         },
         {
           "pos": 2,
-          "name": "Alexander Pichler"
+          "name": "Asen Hans"
         },
         {
           "pos": 3,
-          "name": "Florian Hofer"
+          "name": "Novi Thomas"
         },
         {
           "pos": 4,
-          "name": "Daniel Wimmer"
+          "name": "Göpperl Alex"
         },
         {
           "pos": 5,
-          "name": "Christoph Berger"
+          "name": "Muckenhamme Dieter"
         },
         {
           "pos": 6,
-          "name": "Martin Schwarz"
+          "name": "Christian Geissler"
         },
         {
           "pos": 7,
-          "name": "Johannes Fuchs"
+          "name": "Laubichler Rafael"
         },
         {
           "pos": 8,
-          "name": "Andreas Mayr",
-          "setzung": 4
+          "name": "Sekic Mario"
         },
         {
           "pos": 9,
-          "name": "Stefan Huber",
-          "setzung": 3
+          "name": "Christian Mai"
         },
         {
           "pos": 10,
-          "name": "David Moser"
+          "name": "Unknown"
         },
         {
           "pos": 11,
-          "name": "Bernhard Reiter"
+          "name": "Stefan Sinzinger"
         },
         {
           "pos": 12,
-          "name": "Markus Steiner"
+          "name": "Holzner Bernhard"
         },
         {
           "pos": 13,
-          "name": "Patrick Leitner"
+          "name": "Werner Hager"
         },
         {
           "pos": 14,
-          "name": "Lukas Aigner"
+          "name": "Papst Martin"
         },
         {
           "pos": 15,
-          "name": "Simon Ebner"
+          "name": "Schmidt Markus"
         },
         {
           "pos": 16,
-          "name": "Michael Gruber",
-          "setzung": 2
+          "name": "Sitte Gabriel"
         }
       ],
       "spiele": [
@@ -99,21 +89,8 @@
             "pos": 2
           },
           "termin": null,
-          "platz": "Platz 1",
-          "ergebnis": {
-            "datum": "2026-08-22",
-            "saetze": [
-              [
-                6,
-                1
-              ],
-              [
-                6,
-                2
-              ]
-            ],
-            "sieger": "heim"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-2",
@@ -127,26 +104,8 @@
             "pos": 4
           },
           "termin": null,
-          "platz": "Platz 2",
-          "ergebnis": {
-            "datum": "2026-08-23",
-            "saetze": [
-              [
-                4,
-                6
-              ],
-              [
-                6,
-                3
-              ],
-              [
-                8,
-                10
-              ]
-            ],
-            "sieger": "gast",
-            "notiz": "Match-Tiebreak"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-3",
@@ -160,21 +119,8 @@
             "pos": 6
           },
           "termin": null,
-          "platz": "Platz 2",
-          "ergebnis": {
-            "datum": "2026-08-22",
-            "saetze": [
-              [
-                6,
-                4
-              ],
-              [
-                7,
-                5
-              ]
-            ],
-            "sieger": "heim"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-4",
@@ -188,21 +134,8 @@
             "pos": 8
           },
           "termin": null,
-          "platz": "Platz 1",
-          "ergebnis": {
-            "datum": "2026-08-24",
-            "saetze": [
-              [
-                3,
-                6
-              ],
-              [
-                2,
-                6
-              ]
-            ],
-            "sieger": "gast"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-5",
@@ -216,21 +149,8 @@
             "pos": 10
           },
           "termin": null,
-          "platz": "Platz 3",
-          "ergebnis": {
-            "datum": "2026-08-24",
-            "saetze": [
-              [
-                6,
-                2
-              ],
-              [
-                6,
-                4
-              ]
-            ],
-            "sieger": "heim"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-6",
@@ -244,26 +164,8 @@
             "pos": 12
           },
           "termin": null,
-          "platz": "Platz 1",
-          "ergebnis": {
-            "datum": "2026-08-25",
-            "saetze": [
-              [
-                4,
-                6
-              ],
-              [
-                6,
-                3
-              ],
-              [
-                8,
-                10
-              ]
-            ],
-            "sieger": "gast",
-            "notiz": "Match-Tiebreak"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-7",
@@ -277,21 +179,8 @@
             "pos": 14
           },
           "termin": null,
-          "platz": "Platz 2",
-          "ergebnis": {
-            "datum": "2026-08-26",
-            "saetze": [
-              [
-                7,
-                6
-              ],
-              [
-                6,
-                4
-              ]
-            ],
-            "sieger": "heim"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R1-8",
@@ -305,21 +194,8 @@
             "pos": 16
           },
           "termin": null,
-          "platz": "Platz 3",
-          "ergebnis": {
-            "datum": "2026-08-25",
-            "saetze": [
-              [
-                2,
-                6
-              ],
-              [
-                4,
-                6
-              ]
-            ],
-            "sieger": "gast"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R2-1",
@@ -333,21 +209,8 @@
             "spiel": "A-R1-2"
           },
           "termin": null,
-          "platz": "Platz 1",
-          "ergebnis": {
-            "datum": "2026-08-29",
-            "saetze": [
-              [
-                6,
-                3
-              ],
-              [
-                6,
-                4
-              ]
-            ],
-            "sieger": "heim"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R2-2",
@@ -361,22 +224,8 @@
             "spiel": "A-R1-4"
           },
           "termin": null,
-          "platz": "Platz 2",
-          "ergebnis": {
-            "datum": "2026-08-29",
-            "saetze": [
-              [
-                4,
-                6
-              ],
-              [
-                6,
-                7
-              ]
-            ],
-            "sieger": "gast",
-            "notiz": "Tiebreak 7:5"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R2-3",
@@ -389,10 +238,9 @@
             "quelle": "sieger",
             "spiel": "A-R1-6"
           },
-          "termin": "2026-08-31T18:00",
-          "platz": "Platz 1",
-          "ergebnis": null,
-          "top": true
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R2-4",
@@ -407,8 +255,7 @@
           },
           "termin": null,
           "platz": null,
-          "ergebnis": null,
-          "top": false
+          "ergebnis": null
         },
         {
           "id": "A-R3-1",
@@ -421,10 +268,9 @@
             "quelle": "sieger",
             "spiel": "A-R2-2"
           },
-          "termin": "2026-09-05T10:00",
-          "platz": "Platz 2",
-          "ergebnis": null,
-          "top": true
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "A-R3-2",
@@ -463,17 +309,11 @@
       "id": "B",
       "name": "B-Bewerb",
       "groesse": 16,
-      "deadlines": {
-        "1": "2026-09-01",
-        "2": "2026-09-08",
-        "3": "2026-09-15",
-        "4": "2026-09-22"
-      },
+      "deadlines": {},
       "spieler": [
         {
           "pos": 1,
-          "name": "Sabine Winkler",
-          "setzung": 1
+          "name": "Freilos"
         },
         {
           "pos": 2,
@@ -481,53 +321,51 @@
         },
         {
           "pos": 3,
-          "name": "Franz Lindner"
+          "name": "Freilos"
         },
         {
           "pos": 4,
-          "name": "Manuel Egger"
+          "name": "Freilos"
         },
         {
           "pos": 5,
-          "name": "Georg Neubauer"
+          "name": "Freilos"
         },
         {
           "pos": 6,
-          "name": "Claudia Pfeifer"
+          "name": "Freilos"
         },
         {
           "pos": 7,
-          "name": "Tobias Auer"
+          "name": "Freilos"
         },
         {
           "pos": 8,
-          "name": "Peter Wagner",
-          "setzung": 4
+          "name": "Freilos"
         },
         {
           "pos": 9,
-          "name": "Katrin Baumgartner",
-          "setzung": 3
+          "name": "Freilos"
         },
         {
           "pos": 10,
-          "name": "Nina Hofstätter"
+          "name": "Freilos"
         },
         {
           "pos": 11,
-          "name": "Josef Brandstetter"
+          "name": "Freilos"
         },
         {
           "pos": 12,
-          "name": "Anna Riedl"
+          "name": "Freilos"
         },
         {
           "pos": 13,
-          "name": "Elisabeth Haas"
+          "name": "Freilos"
         },
         {
           "pos": 14,
-          "name": "Verena Stadler"
+          "name": "Freilos"
         },
         {
           "pos": 15,
@@ -535,8 +373,7 @@
         },
         {
           "pos": 16,
-          "name": "Julia Lechner",
-          "setzung": 2
+          "name": "Freilos"
         }
       ],
       "spiele": [
@@ -567,21 +404,8 @@
             "pos": 4
           },
           "termin": null,
-          "platz": "Platz 3",
-          "ergebnis": {
-            "datum": "2026-08-27",
-            "saetze": [
-              [
-                6,
-                7
-              ],
-              [
-                3,
-                6
-              ]
-            ],
-            "sieger": "gast"
-          }
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "B-R1-3",
@@ -594,10 +418,9 @@
             "quelle": "spieler",
             "pos": 6
           },
-          "termin": "2026-08-27T18:00",
-          "platz": "Platz 2",
-          "ergebnis": null,
-          "top": false
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "B-R1-4",
@@ -610,10 +433,9 @@
             "quelle": "spieler",
             "pos": 8
           },
-          "termin": "2026-08-31T17:30",
-          "platz": "Platz 3",
-          "ergebnis": null,
-          "top": false
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "B-R1-5",
@@ -627,22 +449,8 @@
             "pos": 10
           },
           "termin": null,
-          "platz": "Platz 1",
-          "ergebnis": {
-            "datum": "2026-08-28",
-            "saetze": [
-              [
-                6,
-                2
-              ],
-              [
-                6,
-                1
-              ]
-            ],
-            "sieger": "heim"
-          },
-          "top": false
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "B-R1-6",
@@ -670,10 +478,9 @@
             "quelle": "spieler",
             "pos": 14
           },
-          "termin": "2026-09-01T19:00",
-          "platz": "Platz 1",
-          "ergebnis": null,
-          "top": false
+          "termin": null,
+          "platz": null,
+          "ergebnis": null
         },
         {
           "id": "B-R1-8",
