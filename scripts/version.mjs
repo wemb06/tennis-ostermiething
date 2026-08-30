@@ -25,9 +25,13 @@ const APP = datei('docs/assets/app.js');
 const CSS = datei('docs/assets/app.css');
 const LOGIK = datei('docs/assets/bracket.js');
 
-/** Vorhandene ?v=-Angaben ausblenden, damit der Stempel sich nicht selbst beeinflusst. */
+/**
+ * Vorhandene ?v=-Angaben ausblenden, damit der Stempel sich nicht selbst
+ * beeinflusst; Zeilenenden vereinheitlichen, damit Git-Umstellungen von
+ * LF auf CRLF den Stempel nicht scheinbar veralten lassen.
+ */
 function ohneStempel(text) {
-  return text.replaceAll(/\?v=[0-9a-f]{8}/g, '');
+  return text.replaceAll(/\?v=[0-9a-f]{8}/g, '').replaceAll('\r\n', '\n');
 }
 
 export function berechneVersion() {

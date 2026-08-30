@@ -250,8 +250,7 @@
           },
           "termin": "2026-09-06T09:00",
           "platz": "Platz 1",
-          "ergebnis": null,
-          "top": true
+          "ergebnis": null
         },
         {
           "id": "A-R2-2",
@@ -281,8 +280,7 @@
           },
           "termin": "2026-08-31T18:00",
           "platz": "Platz 1",
-          "ergebnis": null,
-          "top": true
+          "ergebnis": null
         },
         {
           "id": "A-R2-4",
@@ -297,8 +295,7 @@
           },
           "termin": "2026-09-01T18:00",
           "platz": "Platz 1",
-          "ergebnis": null,
-          "top": true
+          "ergebnis": null
         },
         {
           "id": "A-R3-1",
