@@ -1,7 +1,7 @@
 {
   "verein": "UTC Ostermiething",
   "titel": "Vereinsmeisterschaft 2026",
-  "stand": "2026-09-04T08:49:55+02:00",
+  "stand": "2026-09-04T17:36:21+02:00",
   "hinweis": "Ergebnis und Termin kann jede und jeder selbst eintragen: Spiel antippen.",
   "finaltag": "2026-09-20",
   "api": "https://script.google.com/macros/s/AKfycbxGjaCgXVS_FjbE4RnsOtcVqRVv5wiCY1bybg7ukEFXH5K78_E_h8AnH0LmTrbrfxrt/exec",
@@ -413,7 +413,7 @@
       "spieler": [
         {
           "pos": 1,
-          "name": "Freilos"
+          "name": "Schmutzler M."
         },
         {
           "pos": 2,
@@ -421,59 +421,59 @@
         },
         {
           "pos": 3,
-          "name": "Freilos"
+          "name": "Malits G."
         },
         {
           "pos": 4,
-          "name": "Freilos"
+          "name": "Kopelent H."
         },
         {
           "pos": 5,
-          "name": "Freilos"
+          "name": "Schlager T."
         },
         {
           "pos": 6,
-          "name": "Freilos"
+          "name": "Spitzauer M."
         },
         {
           "pos": 7,
-          "name": "Freilos"
+          "name": "Schütte L."
         },
         {
           "pos": 8,
-          "name": "Freilos"
+          "name": "Divinberger F."
         },
         {
           "pos": 9,
-          "name": "Freilos"
+          "name": "Maier M."
         },
         {
           "pos": 10,
-          "name": "Freilos"
+          "name": "Kroier"
         },
         {
           "pos": 11,
-          "name": "Freilos"
+          "name": "Brandner W."
         },
         {
           "pos": 12,
-          "name": "Freilos"
+          "name": "Degn A."
         },
         {
           "pos": 13,
-          "name": "Freilos"
+          "name": "Niedermüller S."
         },
         {
           "pos": 14,
-          "name": "Freilos"
+          "name": "Deuchert M."
         },
         {
           "pos": 15,
-          "name": "Freilos"
+          "name": "Frugner B."
         },
         {
           "pos": 16,
-          "name": "Freilos"
+          "name": "Datz J."
         }
       ],
       "spiele": [
@@ -505,7 +505,11 @@
           },
           "termin": null,
           "platz": null,
-          "ergebnis": null
+          "ergebnis": {
+            "saetze": [],
+            "sieger": "gast",
+            "notiz": "w.o."
+          }
         },
         {
           "id": "B-R1-3",
@@ -520,7 +524,11 @@
           },
           "termin": null,
           "platz": null,
-          "ergebnis": null
+          "ergebnis": {
+            "saetze": [],
+            "sieger": "gast",
+            "notiz": "w.o."
+          }
         },
         {
           "id": "B-R1-4",
@@ -550,7 +558,19 @@
           },
           "termin": null,
           "platz": null,
-          "ergebnis": null
+          "ergebnis": {
+            "saetze": [
+              [
+                6,
+                1
+              ],
+              [
+                6,
+                0
+              ]
+            ],
+            "sieger": "heim"
+          }
         },
         {
           "id": "B-R1-6",
@@ -580,7 +600,11 @@
           },
           "termin": null,
           "platz": null,
-          "ergebnis": null
+          "ergebnis": {
+            "saetze": [],
+            "sieger": "heim",
+            "notiz": "w.o."
+          }
         },
         {
           "id": "B-R1-8",
@@ -595,7 +619,19 @@
           },
           "termin": null,
           "platz": null,
-          "ergebnis": null
+          "ergebnis": {
+            "saetze": [
+              [
+                3,
+                6
+              ],
+              [
+                1,
+                6
+              ]
+            ],
+            "sieger": "gast"
+          }
         },
         {
           "id": "B-R2-1",
@@ -719,7 +755,7 @@
           "ergebnis": null
         }
       ],
-      "sichtbar": false
+      "sichtbar": true
     }
   ]
 }
