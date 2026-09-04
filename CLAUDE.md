@@ -25,6 +25,8 @@ nicht die Dokumentation.** Push nach `main` = online.
 - `scripts/` — Werkzeuge (Node ohne npm-Pakete bzw. PowerShell)
 - `backend/apps-script.gs` — Melde-API als Google-Apps-Script: nimmt Ergebnis-, Termin-
   und Markierungs-Meldungen entgegen, prüft sie und schreibt sie als Commit ins Repo.
+  **Achtung: Änderungen hier wirken erst nach dem Neu-Bereitstellen im Apps-Script-Editor**
+  (Bereitstellen → Bereitstellungen verwalten → Stift → Version: Neu). Die URL bleibt gleich.
   Einrichtung: `backend/ANLEITUNG.md`. Die URL steht im Feld `api` der Turnierdatei;
   ist sie `null`, blendet die Seite alle Eintrage-Knöpfe aus.
 
@@ -69,6 +71,9 @@ kampflos aufsteigen.
   Erzeugt je Bewerb auch ein Spiel um Platz 3 — abschaltbar mit `-OhnePlatz3`.
 - **Ergebnis eintragen (derzeit):** von Hand in `docs/data/vm-2026.json` beim passenden
   Spiel `ergebnis` setzen und `stand` aktualisieren, prüfen, committen, pushen
+- **Vor jedem Push `git pull`:** jede Meldung über die Seite ist ein eigener Commit vom
+  Apps Script auf `main`. Das lokale Arbeitsverzeichnis erfährt davon nichts — ohne Pull
+  überschreibt ein Push die Meldungen, die inzwischen hereingekommen sind.
 - **Icons neu erzeugen:** `node scripts/bilder.mjs` (zeichnet die PNGs selbst, keine Bibliothek)
 
 ## Konventionen

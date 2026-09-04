@@ -70,7 +70,8 @@ eine *neue Bereitstellung* angelegt, ändert sich die URL und muss neu ins JSON.
 - Ergebnis nur für Spiele, bei denen **beide Teilnehmer feststehen** und **noch kein
   Ergebnis** eingetragen ist — Korrekturen laufen über die Turnierleitung (Git-Revert
   oder Hand-Edit). Das verhindert, dass ein fertiges Raster nachträglich umgeschrieben wird.
-- Termin nur, solange das Spiel nicht gespielt ist.
+- Termin auch fuer Spiele, deren Teilnehmer noch aus der Vorrunde kommen — nur nicht
+  mehr, wenn das Spiel gespielt ist.
 - Sätze müssen plausibel sein (0–30, höchstens 5 Sätze), der gemeldete Sieger muss zu den
   Sätzen passen — außer es ist eine Anmerkung wie „w.o." dabei.
 - Name des Melders ist Pflicht und landet in der Commit-Nachricht.
