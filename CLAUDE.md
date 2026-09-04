@@ -31,9 +31,15 @@ nicht die Dokumentation.** Push nach `main` = online.
 ## Datenmodell — der zentrale Kniff
 
 Spiele speichern keine Namen, sondern **Referenzen**:
-`{"quelle":"spieler","pos":3}` (Runde 1) bzw. `{"quelle":"sieger","spiel":"A-R1-2"}`.
+`{"quelle":"spieler","pos":3}` (Runde 1), `{"quelle":"sieger","spiel":"A-R1-2"}`
+und `{"quelle":"verlierer","spiel":"A-R3-1"}`.
 Wer im Halbfinale steht, wird beim Anzeigen aus dem Viertelfinal-Ergebnis aufgelöst —
-ein eingetragener Sieger rückt dadurch automatisch weiter. Ergebnis-Format:
+ein eingetragener Sieger rückt dadurch automatisch weiter.
+Das **Spiel um Platz 3** (`"art": "platz3"`, ID `A-P3`) hängt über zwei
+Verlierer-Referenzen an den Halbfinali. Es zählt nicht zum Raster: eigene Zählung
+in der Datenprüfung, keine Rundennummer, kein Finale — angezeigt wird es als
+eigener Block unter dem Raster (und auf der Startseite, sobald es spielbereit oder
+angesetzt ist). Ergebnis-Format:
 `{"datum":"2026-08-29","saetze":[[6,4],[3,6],[10,7]],"sieger":"heim","notiz":"Match-Tiebreak"}`.
 `"sichtbar": false` blendet einen ganzen Bewerb aus — kein Tab, keine Spiele auf der
 Startseite (fehlt das Feld, ist der Bewerb sichtbar).
@@ -42,7 +48,9 @@ Ein Ergebnis darf **ohne Sätze** gemeldet werden — dann steht nur der Sieger 
 Die Notiz setzt das Formular selbst, damit das bereits veröffentlichte Apps Script
 unverändert bleiben kann (es verlangt Sätze **oder** eine Notiz).
 Termine sind gemischt: fixer `termin` **oder** `null` = „Termin offen" mit Runden-Deadline
-aus `deadlines`. Spieler namens `Freilos` (oder unbesetzte Positionen) lassen den Gegner
+aus `deadlines`. Ein Termin darf auch für ein Spiel gemeldet werden, dessen Teilnehmer
+noch aus der Vorrunde kommen (Status `wartet`) — solche Spiele stehen dann mit
+„Sieger Halbfinale 1" auf der Startseite; ohne Termin bleiben sie dort weg. Spieler namens `Freilos` (oder unbesetzte Positionen) lassen den Gegner
 kampflos aufsteigen.
 
 ## Workflows
@@ -57,7 +65,8 @@ kampflos aufsteigen.
   die Seite bricht dann mit einem Folgefehler ab.
 - **Vorschau:** `node scripts/serve.mjs` → `http://localhost:4173`, im WLAN auch am Handy
 - **Neues Turnier / echte Nennungen einspielen:** `scripts\New-Turnier.ps1 -A liste-a.txt -B liste-b.txt -Force`
-  (eine Zeile pro Name, Reihenfolge = Setzung; überschreibt vorhandene Ergebnisse!)
+  (eine Zeile pro Name, Reihenfolge = Setzung; überschreibt vorhandene Ergebnisse!).
+  Erzeugt je Bewerb auch ein Spiel um Platz 3 — abschaltbar mit `-OhnePlatz3`.
 - **Ergebnis eintragen (derzeit):** von Hand in `docs/data/vm-2026.json` beim passenden
   Spiel `ergebnis` setzen und `stand` aktualisieren, prüfen, committen, pushen
 - **Icons neu erzeugen:** `node scripts/bilder.mjs` (zeichnet die PNGs selbst, keine Bibliothek)

@@ -279,6 +279,14 @@ button {
   font-style: italic;
 }
 
+/* Auf den Karten (Startseite, Spiel um Platz 3) ist Platz für zwei Zeilen —
+   "Sieger aus Huber – Mayr" soll dort lesbar bleiben statt abgeschnitten zu werden.
+   Im Raster bleibt es beim einzeiligen Abschneiden, dort ist die Spalte schmal. */
+.karten .seite.offen .name {
+  overflow: visible;
+  white-space: normal;
+}
+
 .seite.freilos .name {
   color: var(--text-leise);
 }
@@ -429,6 +437,27 @@ button {
   width: 8px;
   height: 2px;
   background: var(--linie);
+}
+
+/* Spiel um Platz 3 — hängt in der letzten Spalte unter dem Finale.
+   Eigene Beschriftung, weil die Spaltenüberschrift dort "Finale" sagt. */
+.kleines-finale {
+  width: 100%;
+}
+
+.kleines-finale-kopf {
+  margin-bottom: 0.25rem;
+  color: var(--text-leise);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.meister.dritter {
+  border-color: var(--linie);
+  background: var(--flaeche-2);
+  font-weight: 600;
 }
 
 /* ----------------------------------------------------------- Tableiste --- */
@@ -782,4 +811,20 @@ button {
   height: 1.05rem;
   vertical-align: -0.15em;
   margin-right: 0.4rem;
+}
+
+/* Info über dem Raster (z. B. Finaltag) */
+
+.raster-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--linie);
+  border-left: 4px solid var(--akzent);
+  border-radius: 0 12px 12px 0;
+  background: var(--flaeche);
+  font-size: 0.88rem;
+  font-weight: 600;
 }

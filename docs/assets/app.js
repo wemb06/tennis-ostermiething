@@ -8,13 +8,14 @@ import {
   alleSpiele,
   anzahlRunden,
   bereiteTurnierAuf,
+  istPlatz3,
   istSichtbar,
   ladeTurnier,
   naechsteSpiele,
   rundenName,
   seitenName,
   siegerAusSaetzen,
-} from './bracket.js?v=26967938';
+} from './bracket.js?v=2e5ae759';
 
 // Ansichten: 'naechste' = Startseite, sonst die ID eines Bewerbs (Raster)
 const MERKER_SCHLUESSEL = 'vm-gemeldet';
@@ -56,6 +57,7 @@ function el(tag, eigenschaften = {}, ...kinder) {
 
 const fmtTagKurz = new Intl.DateTimeFormat('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit' });
 const fmtTagLang = new Intl.DateTimeFormat('de-AT', { weekday: 'long', day: 'numeric', month: 'long' });
+const fmtTagJahr = new Intl.DateTimeFormat('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 const fmtUhr = new Intl.DateTimeFormat('de-AT', { hour: '2-digit', minute: '2-digit' });
 const fmtStand = new Intl.DateTimeFormat('de-AT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
@@ -302,7 +304,7 @@ function tagesGruppen(spiele, heute, optionen) {
     if (!termin) {
       schluessel = '3';
       titel = 'Termin noch offen';
-    } else if (tagesSchluessel(termin) < tagesSchluessel(heute)) {
+    } else if (tagesSchluessel(termin) < tagesSchluessel(heute) && spiel.status === 'spielbereit') {
       schluessel = '0';
       titel = 'Ergebnis ausständig';
     } else {
@@ -319,20 +321,40 @@ function tagesGruppen(spiele, heute, optionen) {
 
 function rasterBlock(bewerb) {
   const runden = anzahlRunden(bewerb.groesse);
+  const kleineFinali = bewerb.spiele.filter(istPlatz3);
   const spalten = [];
 
   for (let runde = 1; runde <= runden; runde += 1) {
-    const spiele = bewerb.spiele.filter((spiel) => spiel.runde === runde);
+    const spiele = bewerb.spiele.filter((spiel) => spiel.runde === runde && !istPlatz3(spiel));
+    const plaetze = spiele.map((spiel) => el('div', { class: 'slot' }, partieKarte(spiel, { zeigeZeit: false })));
+
+    // Letzte Spalte: unter dem Finale hängt das Spiel um Platz 3. Der leere
+    // Platz darüber hält das Finale genau in der Mitte — sonst zeigt die
+    // Klammer aus dem Halbfinale daneben.
+    if (runde === runden && kleineFinali.length > 0) {
+      plaetze.unshift(el('div', { class: 'slot', 'aria-hidden': 'true' }));
+      for (const spiel of kleineFinali) {
+        plaetze.push(
+          el(
+            'div',
+            { class: 'slot' },
+            el(
+              'div',
+              { class: 'kleines-finale' },
+              el('div', { class: 'kleines-finale-kopf', text: 'Um Platz 3' }),
+              partieKarte(spiel, { zeigeZeit: false }),
+            ),
+          ),
+        );
+      }
+    }
+
     spalten.push(
       el(
         'div',
         { class: 'runde' },
         el('div', { class: 'rundenkopf', text: rundenName(bewerb.groesse, runde) }),
-        el(
-          'div',
-          { class: 'paarungen' },
-          spiele.map((spiel) => el('div', { class: 'slot' }, partieKarte(spiel, { zeigeZeit: false }))),
-        ),
+        el('div', { class: 'paarungen' }, plaetze),
       ),
     );
     if (runde < runden) {
@@ -347,12 +369,23 @@ function rasterBlock(bewerb) {
     }
   }
 
+  // Finaltag steht im Raster, solange der Bewerb noch läuft
+  const finaltag = alsDatum(zustand.turnier?.finaltag);
+  const info =
+    finaltag && !bewerb.meister
+      ? el('p', { class: 'raster-info' }, el('span', { text: '🏆' }), el('span', { text: `Finaltag: ${fmtTagJahr.format(finaltag)}` }))
+      : null;
+
   return el(
     'section',
     { class: 'raster-block' },
     bewerb.meister
       ? el('p', { class: 'meister' }, el('span', { text: '🏆' }), el('span', { text: `Vereinsmeister: ${bewerb.meister.name}` }))
       : null,
+    bewerb.dritter
+      ? el('p', { class: 'meister dritter' }, el('span', { text: '🥉' }), el('span', { text: `3. Platz: ${bewerb.dritter.name}` }))
+      : null,
+    info,
     el('div', { class: 'raster-huelle' }, el('div', { class: 'raster' }, spalten)),
   );
 }
@@ -514,6 +547,13 @@ function terminFormular(spiel) {
   knoten.detailInhalt.replaceChildren(
     el('h2', { text: 'Termin eintragen' }),
     el('p', { class: 'formular-hinweis', text: `${seitenName(spiel.heim)} – ${seitenName(spiel.gast)} · ${spiel.rundeName}` }),
+    // Termin vor den Gegnern: erklären, dass das Absicht ist und nichts kaputt macht
+    spiel.status === 'wartet'
+      ? el('p', {
+          class: 'formular-hinweis',
+          text: 'Die Teilnehmer stehen noch nicht fest — der Termin bleibt trotzdem stehen und gilt für die, die sich qualifizieren.',
+        })
+      : null,
     formular,
   );
 }
@@ -718,33 +758,40 @@ function zeigeDetail(spiel) {
   const status = {
     gespielt: 'gespielt',
     spielbereit: termin ? 'angesetzt' : 'Termin noch zu vereinbaren',
-    wartet: 'wartet auf die Vorrunde',
+    wartet: termin ? 'Termin steht — Teilnehmer kommen aus der Vorrunde' : 'wartet auf die Vorrunde',
     freilos: 'Freilos — Aufstieg ohne Spiel',
   }[spiel.status];
 
-  // Eintragen: für alle offen — Ergebnis, sobald das Spiel spielbereit ist,
-  // Termin, solange noch kein Ergebnis feststeht.
+  // Eintragen: für alle offen — Ergebnis, sobald beide Namen feststehen; den
+  // Termin auch schon davor, denn Platz und Uhrzeit stehen oft vor den Gegnern
+  // fest (Halbfinale am Finaltag, Spiel um Platz 3 …).
+  const terminMoeglich = spiel.status === 'spielbereit' || spiel.status === 'wartet';
   const aktionen = [];
   if (zustand.turnier.api) {
     if (spiel.status === 'spielbereit') {
       aktionen.push(el('button', { class: 'knopf-breit', type: 'button', text: 'Ergebnis melden', onclick: () => ergebnisFormular(spiel) }));
+    }
+    if (terminMoeglich) {
       aktionen.push(
         el('button', {
-          class: 'knopf-breit zweitrangig',
+          class: spiel.status === 'spielbereit' ? 'knopf-breit zweitrangig' : 'knopf-breit',
           type: 'button',
           text: spiel.termin ? 'Termin ändern' : 'Termin eintragen',
           onclick: () => terminFormular(spiel),
         }),
       );
-    } else if (spiel.status === 'gespielt') {
+    }
+    if (spiel.status === 'gespielt') {
       aktionen.push(el('p', { class: 'formular-hinweis', text: 'Falsch eingetragen? Bitte kurz der Turnierleitung schreiben.' }));
     }
-  } else if (spiel.status === 'spielbereit') {
+  } else if (terminMoeglich) {
     aktionen.push(el('p', { class: 'formular-hinweis', text: 'Online-Eintragen wird gerade eingerichtet — Ergebnis bitte an die Turnierleitung melden.' }));
   }
 
-  // Teilen: Paarung, Termin und Platz als Nachricht — für die WhatsApp-Gruppe
-  if (spiel.heim.bekannt && spiel.gast.bekannt && !spiel.heim.freilos && !spiel.gast.freilos) {
+  // Teilen: Paarung, Termin und Platz als Nachricht — für die WhatsApp-Gruppe.
+  // Auch schon angesetzte Spiele ohne feste Gegner sind eine Nachricht wert.
+  const echtePaarung = spiel.heim.bekannt && spiel.gast.bekannt && !spiel.heim.freilos && !spiel.gast.freilos;
+  if (echtePaarung || (spiel.status === 'wartet' && spiel.termin)) {
     const teilen = el(
       'button',
       { class: 'knopf-breit zweitrangig', type: 'button', onclick: () => teileSpiel(spiel, teilen) },

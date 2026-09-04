@@ -9,12 +9,21 @@
  * Kernidee: Das Raster speichert keine kopierten Namen, sondern Referenzen
  * ({ quelle: "sieger", spiel: "A-R2-1" }). Wer im Halbfinale steht, wird beim
  * Anzeigen aus dem Viertelfinal-Ergebnis aufgelöst — ein eingetragener Sieger
- * rückt dadurch von selbst weiter.
+ * rückt dadurch von selbst weiter. Dasselbe gilt für { quelle: "verlierer" }:
+ * damit hängt das Spiel um Platz 3 an den beiden Halbfinali.
  *
  * Läuft unverändert im Browser und in Node (nur Standard-APIs).
  */
 
 export const FREILOS = 'Freilos';
+
+/** Kennzeichen im Feld `art` für das Spiel um Platz 3 (steht außerhalb des Rasters). */
+export const PLATZ3 = 'platz3';
+
+/** Spiel um Platz 3? Solche Spiele zählen nicht zum K.-o.-Raster. */
+export function istPlatz3(spiel) {
+  return spiel?.art === PLATZ3;
+}
 
 /** Lädt die Turnierdaten. Cache-Buster, weil Handys die JSON sonst festhalten. */
 export async function ladeTurnier(pfad = 'data/vm-2026.json') {
@@ -108,26 +117,33 @@ export function bereiteBewerbAuf(bewerb) {
   const nummern = new Map();
   const gezaehlt = new Map();
   for (const spiel of spieleRoh) {
+    if (istPlatz3(spiel)) continue; // steht neben dem Raster, bekommt keine Rundennummer
     const nr = (gezaehlt.get(spiel.runde) ?? 0) + 1;
     gezaehlt.set(spiel.runde, nr);
     nummern.set(spiel.id, nr);
   }
 
-  function beschriftung(spiel) {
+  /** "Sieger aus A – B" bzw. "Verlierer Halbfinale 2", solange das Vorspiel offen ist. */
+  function beschriftung(spiel, wer) {
     if (spiel.heim.bekannt && spiel.gast.bekannt) {
-      return `Sieger aus ${spiel.heim.name} – ${spiel.gast.name}`;
+      return `${wer} aus ${spiel.heim.name} – ${spiel.gast.name}`;
     }
-    return `Sieger ${spiel.rundeName} ${spiel.nr}`;
+    return `${wer} ${spiel.rundeName} ${spiel.nr}`;
   }
 
   function seite(referenz) {
     if (!referenz) return offeneSeite('offen');
     if (referenz.quelle === 'spieler') return spielerSeite(bewerb, referenz.pos);
-    if (referenz.quelle === 'sieger') {
+    if (referenz.quelle === 'sieger' || referenz.quelle === 'verlierer') {
+      const sucheSieger = referenz.quelle === 'sieger';
       const vorspiel = aufloesen(referenz.spiel);
       if (!vorspiel) return offeneSeite('offen');
-      if (vorspiel.sieger) return { ...vorspiel.sieger, herkunft: null };
-      return offeneSeite(beschriftung(vorspiel));
+      const gefunden = sucheSieger ? vorspiel.sieger : vorspiel.verlierer;
+      // Freilose steigen nicht ins Spiel um Platz 3 auf — dort bleibt die Seite offen
+      if (gefunden && (sucheSieger || !gefunden.freilos)) return { ...gefunden, herkunft: null };
+      // Ein kampflos entschiedenes Vorspiel hat keinen Verlierer, den man schicken könnte
+      if (!sucheSieger && vorspiel.automatisch) return offeneSeite('kein Gegner (Freilos)');
+      return offeneSeite(beschriftung(vorspiel, sucheSieger ? 'Sieger' : 'Verlierer'));
     }
     return offeneSeite('offen');
   }
@@ -176,7 +192,8 @@ export function bereiteBewerbAuf(bewerb) {
       bewerbId: bewerb.id,
       bewerbName: bewerb.name,
       groesse: bewerb.groesse,
-      rundeName: rundenName(bewerb.groesse, roh.runde),
+      art: roh.art ?? null,
+      rundeName: istPlatz3(roh) ? 'Spiel um Platz 3' : rundenName(bewerb.groesse, roh.runde),
       termin: roh.termin ?? null,
       platz: roh.platz ?? null,
       ergebnis: roh.ergebnis ?? null,
@@ -198,10 +215,12 @@ export function bereiteBewerbAuf(bewerb) {
 
   const spiele = spieleRoh.map((roh) => aufloesen(roh.id)).filter(Boolean);
   const letzteRunde = anzahlRunden(bewerb.groesse);
-  const finale = spiele.find((spiel) => spiel.runde === letzteRunde);
+  const finale = spiele.find((spiel) => spiel.runde === letzteRunde && !istPlatz3(spiel));
   const meister = finale?.sieger && !finale.sieger.freilos ? finale.sieger : null;
+  const kleinesFinale = spiele.find(istPlatz3);
+  const dritter = kleinesFinale?.sieger && !kleinesFinale.sieger.freilos ? kleinesFinale.sieger : null;
 
-  return { ...bewerb, spiele, meister };
+  return { ...bewerb, spiele, meister, dritter };
 }
 
 /** Ganzes Turnier (alle Bewerbe) auflösen. */
@@ -222,12 +241,16 @@ function zeitwert(wert) {
 }
 
 /**
- * Anstehende Spiele: beide Teilnehmer stehen fest, Ergebnis fehlt noch.
+ * Anstehende Spiele: alles, was noch gespielt wird und schon einen Platz im
+ * Kalender hat. Das sind die spielbereiten Partien — und zusätzlich jene, deren
+ * Termin bereits vereinbart ist, obwohl die Teilnehmer noch aus der Vorrunde
+ * kommen ("Sieger Halbfinale 1"). Ohne Termin bleiben wartende Spiele draußen,
+ * sonst stünde das halbe Raster auf der Startseite.
  * Sortiert nach Termin; Spiele ohne Termin hängen sich hinten an (nach Runde).
  */
 export function naechsteSpiele(spiele) {
   return spiele
-    .filter((spiel) => spiel.status === 'spielbereit')
+    .filter((spiel) => spiel.status === 'spielbereit' || (spiel.status === 'wartet' && spiel.termin))
     .sort((a, b) => {
       const za = zeitwert(a.termin);
       const zb = zeitwert(b.termin);
@@ -278,6 +301,9 @@ export function pruefeTurnier(turnier) {
   if (turnier.api !== undefined && turnier.api !== null && !/^https:\/\//.test(String(turnier.api))) {
     fehler(`"api" muss eine https-Adresse oder null sein (ist: ${turnier.api}).`);
   }
+  if (turnier.finaltag && Number.isNaN(new Date(turnier.finaltag).getTime())) {
+    fehler(`"finaltag" ist kein gültiges Datum: ${turnier.finaltag}`);
+  }
   if (!Array.isArray(turnier.bewerbe) || turnier.bewerbe.length === 0) {
     fehler('Keine Bewerbe vorhanden.');
     return meldungen;
@@ -324,10 +350,33 @@ export function pruefeTurnier(turnier) {
       if (!spiel.id) fehler(`${wo}: Ein Spiel hat keine ID.`);
       else if (ids.has(spiel.id)) fehler(`${wo}: Spiel-ID ${spiel.id} kommt doppelt vor.`);
       else ids.add(spiel.id);
-      proRunde.set(spiel.runde, (proRunde.get(spiel.runde) ?? 0) + 1);
+      if (spiel.art !== undefined && spiel.art !== null && spiel.art !== PLATZ3) {
+        fehler(`${wo}/${spiel.id}: Unbekannte Spielart "${spiel.art}" (erlaubt: "${PLATZ3}").`);
+      }
+      if (!istPlatz3(spiel)) proRunde.set(spiel.runde, (proRunde.get(spiel.runde) ?? 0) + 1);
     }
-    if (spiele.length !== groesse - 1) {
-      fehler(`${wo}: ${spiele.length} Spiele statt ${groesse - 1} für ein ${groesse}er-Raster.`);
+
+    // Das Spiel um Platz 3 hängt neben dem Raster und wird darum getrennt gezählt
+    const kleineFinali = spiele.filter(istPlatz3);
+    if (kleineFinali.length > 1) {
+      fehler(`${wo}: ${kleineFinali.length} Spiele um Platz 3 — es darf nur eines geben.`);
+    }
+    for (const kleines of kleineFinali) {
+      if (groesse < 4) {
+        fehler(`${wo}/${kleines.id}: Ein Spiel um Platz 3 braucht mindestens ein 4er-Raster.`);
+      } else if (kleines.runde !== runden) {
+        fehler(`${wo}/${kleines.id}: Das Spiel um Platz 3 gehört in Runde ${runden} (ist: ${kleines.runde}).`);
+      }
+      for (const [seiteName, referenz] of [['heim', kleines.heim], ['gast', kleines.gast]]) {
+        if (referenz && referenz.quelle !== 'verlierer') {
+          warnung(`${wo}/${kleines.id}: Seite "${seiteName}" sollte auf den Verlierer eines Halbfinales zeigen.`);
+        }
+      }
+    }
+
+    const rasterSpiele = spiele.length - kleineFinali.length;
+    if (rasterSpiele !== groesse - 1) {
+      fehler(`${wo}: ${rasterSpiele} Spiele statt ${groesse - 1} für ein ${groesse}er-Raster.`);
     }
     for (let runde = 1; runde <= runden; runde += 1) {
       const soll = groesse / 2 ** runde;
@@ -344,10 +393,12 @@ export function pruefeTurnier(turnier) {
           if (!positionen.has(referenz.pos)) {
             warnung(`${wo}/${spiel.id}: Seite "${seiteName}" zeigt auf unbesetzte Position ${referenz.pos}.`);
           }
-        } else if (referenz.quelle === 'sieger') {
+        } else if (referenz.quelle === 'sieger' || referenz.quelle === 'verlierer') {
           const vorspiel = spiele.find((s) => s.id === referenz.spiel);
           if (!vorspiel) fehler(`${wo}/${spiel.id}: Referenz auf unbekanntes Spiel ${referenz.spiel}.`);
-          else if (vorspiel.runde !== spiel.runde - 1) {
+          else if (istPlatz3(vorspiel)) {
+            fehler(`${wo}/${spiel.id}: Referenz auf das Spiel um Platz 3 (${referenz.spiel}) — daraus geht es nicht weiter.`);
+          } else if (vorspiel.runde !== spiel.runde - 1) {
             fehler(`${wo}/${spiel.id}: Referenz auf ${referenz.spiel} überspringt eine Runde.`);
           }
         } else {
@@ -388,12 +439,12 @@ export function pruefeTurnier(turnier) {
   // Auflösung muss durchlaufen (fängt Ringschlüsse und tote Referenzen ab)
   try {
     const aufbereitet = bereiteTurnierAuf(turnier);
-    for (const bewerb of aufbereitet.bewerbe) {
-      const soll = (bewerb.groesse ?? 0) - 1;
-      if (Number.isInteger(soll) && soll > 0 && bewerb.spiele.length !== soll) {
+    aufbereitet.bewerbe.forEach((bewerb, i) => {
+      const soll = (turnier.bewerbe[i]?.spiele ?? []).length;
+      if (soll > 0 && bewerb.spiele.length !== soll) {
         fehler(`Bewerb ${bewerb.id}: ${soll - bewerb.spiele.length} Spiel(e) ließen sich nicht auflösen.`);
       }
-    }
+    });
   } catch (fehlerObjekt) {
     fehler(`Raster nicht auflösbar: ${fehlerObjekt.message}`);
   }

@@ -6,7 +6,8 @@
     Liest je Bewerb eine Namensliste (eine Zeile pro Spieler, Reihenfolge = Setzung)
     und baut daraus ein vollständiges K.-o.-Raster: Spieler auf den Setzpositionen,
     alle Spiele mit Sieger-Referenzen. Fehlende Nennungen werden mit "Freilos"
-    aufgefüllt - der Gegner steigt dann automatisch auf.
+    aufgefüllt - der Gegner steigt dann automatisch auf. Dazu kommt je Bewerb ein
+    Spiel um Platz 3 (abschaltbar mit -OhnePlatz3).
 
     Achtung: Die Datei wird komplett neu geschrieben. Bereits eingetragene
     Ergebnisse gehen verloren, darum ist -Force nötig, wenn die Zieldatei existiert.
@@ -33,6 +34,9 @@ param(
     # Liste steht bereits in Rasterreihenfolge: Zeile 1+2 = erstes Spiel, 3+4 = zweites usw.
     # Ohne diesen Schalter gilt die Reihenfolge als Setzung und wird aufs Raster verteilt.
     [switch]$Rasterreihenfolge,
+    # Ohne diesen Schalter bekommt jeder Bewerb ein Spiel um Platz 3
+    # (Verlierer Halbfinale 1 gegen Verlierer Halbfinale 2).
+    [switch]$OhnePlatz3,
     [switch]$Demo,
     [switch]$Force
 )
@@ -74,7 +78,7 @@ function Get-Namen {
 
 function New-Bewerb {
     param([string]$Id, [string]$Name, [string[]]$Namen, [int]$Groesse, [string[]]$Deadlines,
-        [bool]$NachRaster)
+        [bool]$NachRaster, [bool]$MitPlatz3)
 
     if (-not $Namen) { $Namen = @() }
     if ($Namen.Count -gt $Groesse) {
@@ -125,6 +129,21 @@ function New-Bewerb {
         }
     }
 
+    # Spiel um Platz 3: haengt ueber Verlierer-Referenzen an den beiden Halbfinali.
+    # Es steht neben dem Raster - "art" markiert es, damit die Zaehlungen stimmen.
+    if ($MitPlatz3 -and $Groesse -ge 4) {
+        $spiele += [pscustomobject][ordered]@{
+            id       = "$Id-P3"
+            runde    = $runden
+            art      = 'platz3'
+            heim     = [pscustomobject][ordered]@{ quelle = 'verlierer'; spiel = "$Id-R$($runden - 1)-1" }
+            gast     = [pscustomobject][ordered]@{ quelle = 'verlierer'; spiel = "$Id-R$($runden - 1)-2" }
+            termin   = $null
+            platz    = $null
+            ergebnis = $null
+        }
+    }
+
     $deadlineObjekt = [ordered]@{}
     for ($runde = 1; $runde -le $runden; $runde++) {
         if ($Deadlines.Count -ge $runde -and $Deadlines[$runde - 1]) {
@@ -150,8 +169,8 @@ $turnier = [ordered]@{
 }
 if ($Demo) { $turnier['demo'] = $true }
 $turnier['bewerbe'] = @(
-    (New-Bewerb -Id 'A' -Name 'A-Bewerb' -Namen (Get-Namen $A) -Groesse $Groesse -Deadlines $Deadlines -NachRaster $Rasterreihenfolge),
-    (New-Bewerb -Id 'B' -Name 'B-Bewerb' -Namen (Get-Namen $B) -Groesse $Groesse -Deadlines $Deadlines -NachRaster $Rasterreihenfolge)
+    (New-Bewerb -Id 'A' -Name 'A-Bewerb' -Namen (Get-Namen $A) -Groesse $Groesse -Deadlines $Deadlines -NachRaster $Rasterreihenfolge -MitPlatz3 (-not $OhnePlatz3)),
+    (New-Bewerb -Id 'B' -Name 'B-Bewerb' -Namen (Get-Namen $B) -Groesse $Groesse -Deadlines $Deadlines -NachRaster $Rasterreihenfolge -MitPlatz3 (-not $OhnePlatz3))
 )
 
 $json = [pscustomobject]$turnier | ConvertTo-Json -Depth 12

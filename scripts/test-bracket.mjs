@@ -59,6 +59,20 @@ function viererBewerb(namen, ergebnisse = {}) {
   };
 }
 
+/** Viererbewerb plus Spiel um Platz 3 (hängt an den Verlierern der Halbfinali). */
+function viererMitPlatz3(namen, ergebnisse = {}) {
+  const bewerb = viererBewerb(namen, ergebnisse);
+  bewerb.spiele.push({
+    id: 'V-P3',
+    runde: 2,
+    art: 'platz3',
+    heim: { quelle: 'verlierer', spiel: 'V-R1-1' },
+    gast: { quelle: 'verlierer', spiel: 'V-R1-2' },
+    ergebnis: ergebnisse['V-P3'] ?? null,
+  });
+  return bewerb;
+}
+
 const sieg = (sieger, saetze = [[6, 4], [6, 3]], extra = {}) => ({ datum: '2026-08-20', saetze, sieger, ...extra });
 const finde = (bewerb, id) => bewerb.spiele.find((s) => s.id === id);
 
@@ -272,6 +286,57 @@ describe('Freilose', () => {
   });
 });
 
+describe('Spiel um Platz 3', () => {
+  test('heißt so und zählt nicht zu den Rasterrunden', () => {
+    const bewerb = bereiteBewerbAuf(viererMitPlatz3(['A', 'B', 'C', 'D']));
+    assert.equal(finde(bewerb, 'V-P3').rundeName, 'Spiel um Platz 3');
+    assert.equal(finde(bewerb, 'V-R2-1').rundeName, 'Finale');
+    assert.equal(finde(bewerb, 'V-R2-1').nr, 1, 'das Finale bleibt Nr. 1 seiner Runde');
+  });
+
+  test('nennt die Verlierer, solange die Halbfinali offen sind', () => {
+    const bewerb = bereiteBewerbAuf(viererMitPlatz3(['Müller', 'Huber', 'Gruber', 'Mayr']));
+    assert.equal(seitenName(finde(bewerb, 'V-P3').heim), 'Verlierer aus Müller – Huber');
+    assert.equal(finde(bewerb, 'V-P3').status, 'wartet');
+  });
+
+  test('die Verlierer der Halbfinali rücken nach', () => {
+    const bewerb = bereiteBewerbAuf(
+      viererMitPlatz3(['A', 'B', 'C', 'D'], { 'V-R1-1': sieg('heim'), 'V-R1-2': sieg('gast') }),
+    );
+    const spiel = finde(bewerb, 'V-P3');
+    assert.equal(spiel.heim.name, 'B');
+    assert.equal(spiel.gast.name, 'C');
+    assert.equal(spiel.status, 'spielbereit');
+  });
+
+  test('ein Freilos-Verlierer bleibt draußen — die Seite bleibt offen', () => {
+    const bewerb = bereiteBewerbAuf(viererMitPlatz3(['A', 'Freilos', 'C', 'D']));
+    const spiel = finde(bewerb, 'V-P3');
+    assert.equal(spiel.heim.bekannt, false);
+    assert.equal(seitenName(spiel.heim), 'kein Gegner (Freilos)');
+    assert.equal(spiel.status, 'wartet');
+  });
+
+  test('Meister kommt aus dem Finale, nicht aus dem Spiel um Platz 3', () => {
+    const bewerb = bereiteBewerbAuf(
+      viererMitPlatz3(['A', 'B', 'C', 'D'], {
+        'V-R1-1': sieg('heim'),
+        'V-R1-2': sieg('heim'),
+        'V-R2-1': sieg('gast'),
+        'V-P3': sieg('heim'),
+      }),
+    );
+    assert.equal(bewerb.meister.name, 'C');
+    assert.equal(bewerb.dritter.name, 'B');
+  });
+
+  test('ohne Spiel um Platz 3 gibt es keinen Dritten', () => {
+    const bewerb = bereiteBewerbAuf(viererBewerb(['A', 'B', 'C', 'D']));
+    assert.equal(bewerb.dritter, null);
+  });
+});
+
 describe('Kaputte Daten stürzen nicht ab', () => {
   test('Referenz auf ein nicht vorhandenes Spiel', () => {
     const roh = viererBewerb(['A', 'B', 'C', 'D']);
@@ -346,6 +411,20 @@ describe('Nächste Spiele', () => {
     const bewerb = bereiteBewerbAuf(viererBewerb(['A', 'B', 'C', 'D']));
     assert.deepEqual(naechsteSpiele(bewerb.spiele).map((s) => s.id), ['V-R1-1', 'V-R1-2']);
   });
+
+  test('eine wartende Partie mit Termin steht dagegen im Kalender', () => {
+    const roh = viererBewerb(['A', 'B', 'C', 'D']);
+    roh.spiele.find((s) => s.id === 'V-R2-1').termin = '2026-09-08T18:00';
+    const bewerb = bereiteBewerbAuf(roh);
+    assert.deepEqual(naechsteSpiele(bewerb.spiele).map((s) => s.id), ['V-R2-1', 'V-R1-1', 'V-R1-2']);
+  });
+
+  test('auch das Spiel um Platz 3 lässt sich vorab ansetzen', () => {
+    const roh = viererMitPlatz3(['A', 'B', 'C', 'D']);
+    roh.spiele.find((s) => s.id === 'V-P3').termin = '2026-09-08T18:00';
+    const bewerb = bereiteBewerbAuf(roh);
+    assert.ok(naechsteSpiele(bewerb.spiele).some((s) => s.id === 'V-P3'));
+  });
 });
 
 describe('Gespielte Spiele', () => {
@@ -385,6 +464,41 @@ describe('Datenprüfung meldet Fehler', () => {
 
   test('gültige Daten ergeben keine Fehler', () => {
     assert.deepEqual(fehlerTexte(gueltig()), []);
+  });
+
+  test('ein Spiel um Platz 3 ist erlaubt', () => {
+    const t = { verein: 'V', titel: 'T', bewerbe: [viererMitPlatz3(['A', 'B', 'C', 'D'])] };
+    assert.deepEqual(fehlerTexte(t), []);
+  });
+
+  test('unbekannte Spielart', () => {
+    const t = gueltig();
+    t.bewerbe[0].spiele[0].art = 'trostrunde';
+    assert.ok(fehlerTexte(t).some((f) => /Unbekannte Spielart/.test(f)));
+  });
+
+  test('zwei Spiele um Platz 3', () => {
+    const bewerb = viererMitPlatz3(['A', 'B', 'C', 'D']);
+    bewerb.spiele.push({ ...bewerb.spiele.at(-1), id: 'V-P3b' });
+    assert.ok(
+      fehlerTexte({ verein: 'V', titel: 'T', bewerbe: [bewerb] }).some((f) => /nur eines geben/.test(f)),
+    );
+  });
+
+  test('Spiel um Platz 3 in der falschen Runde', () => {
+    const bewerb = viererMitPlatz3(['A', 'B', 'C', 'D']);
+    bewerb.spiele.at(-1).runde = 1;
+    assert.ok(
+      fehlerTexte({ verein: 'V', titel: 'T', bewerbe: [bewerb] }).some((f) => /gehört in Runde 2/.test(f)),
+    );
+  });
+
+  test('aus dem Spiel um Platz 3 geht es nicht weiter', () => {
+    const bewerb = viererMitPlatz3(['A', 'B', 'C', 'D']);
+    bewerb.spiele.find((s) => s.id === 'V-R2-1').heim = { quelle: 'sieger', spiel: 'V-P3' };
+    assert.ok(
+      fehlerTexte({ verein: 'V', titel: 'T', bewerbe: [bewerb] }).some((f) => /daraus geht es nicht weiter/.test(f)),
+    );
   });
 
   test('Rastergröße muss Zweierpotenz sein', () => {
